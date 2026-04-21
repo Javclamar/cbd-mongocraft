@@ -401,7 +401,25 @@ const seedSampleSubmissions = async (
     !challenge7Id ||
     !challenge8Id
   ) {
-    throw new Error('Could not resolve user/challenge IDs for sample submissions');
+    console.log('Could not resolve user/challenge IDs for sample submissions');
+    console.log('Ana:', anaId);
+    console.log('Luis:', luisId);
+    console.log('Maria:', mariaId);
+    console.log('Pedro:', pedroId);
+    console.log('Sofia:', sofiaId);
+    console.log('Diego:', diegoId);
+    console.log('Carla:', carlaId);
+    console.log('Juan:', juanId);
+    console.log('Elena:', elenaId);
+    console.log('Challenge 1:', challenge1Id);
+    console.log('Challenge 2:', challenge2Id);
+    console.log('Challenge 3:', challenge3Id);
+    console.log('Challenge 4:', challenge4Id);
+    console.log('Challenge 5:', challenge5Id);
+    console.log('Challenge 6:', challenge6Id);
+    console.log('Challenge 7:', challenge7Id);
+    console.log('Challenge 8:', challenge8Id);
+    return;
   }
 
   await SubmissionModel.insertMany([

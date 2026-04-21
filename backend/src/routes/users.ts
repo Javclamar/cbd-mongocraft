@@ -41,7 +41,7 @@ const getLeaderboardPage = async (
     UserModel.aggregate<LeaderboardEntry>([
       {
         $setWindowFields: {
-          sortBy: LEADERBOARD_SORT,
+          sortBy: { 'stats.totalScore': -1 },
           output: {
             rank: { $documentNumber: {} },
           },
@@ -118,7 +118,7 @@ router.get('/leaderboard/me', requireAuth, async (req, res) => {
     UserModel.aggregate<LeaderboardEntry>([
       {
         $setWindowFields: {
-          sortBy: LEADERBOARD_SORT,
+          sortBy: { 'stats.totalScore': -1 },
           output: {
             rank: { $documentNumber: {} },
           },
@@ -171,7 +171,7 @@ router.get('/leaderboard/me/context', requireAuth, async (req, res) => {
   const myRankRow = await UserModel.aggregate<Pick<LeaderboardEntry, 'rank'>>([
     {
       $setWindowFields: {
-        sortBy: LEADERBOARD_SORT,
+        sortBy: { 'stats.totalScore': -1 },
         output: {
           rank: { $documentNumber: {} },
         },
@@ -201,7 +201,7 @@ router.get('/leaderboard/me/context', requireAuth, async (req, res) => {
   const rows = await UserModel.aggregate<LeaderboardEntry>([
     {
       $setWindowFields: {
-        sortBy: LEADERBOARD_SORT,
+        sortBy: { 'stats.totalScore': -1 },
         output: {
           rank: { $documentNumber: {} },
         },

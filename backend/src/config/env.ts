@@ -44,4 +44,5 @@ export const config = {
   },
   queryTimeout: 5000,
   evaluationMaxResults,
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
 };
