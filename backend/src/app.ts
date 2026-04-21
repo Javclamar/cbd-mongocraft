@@ -8,6 +8,7 @@ import morgan from 'morgan';
 import { getDbStatus } from './config/db';
 import { config } from './config/env';
 import authRoutes from './routes/auth';
+import adminRoutes from './routes/admin';
 import challengeRoutes from './routes/challenges';
 import submissionRoutes from './routes/submissions';
 import userRoutes from './routes/users';
@@ -45,6 +46,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/users', userRoutes);
