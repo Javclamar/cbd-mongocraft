@@ -37,17 +37,52 @@ const ordersSeed = [
 const usersSeed = [
   {
     username: 'admin',
-    password: 'Admin12345!',
+    password: '123456',
     role: 'admin' as const,
   },
   {
-    username: 'ana',
-    password: 'User12345!',
+    username: 'user1',
+    password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'luis',
-    password: 'User12345!',
+    username: 'user2',
+    password: '123456',
+    role: 'user' as const,
+  },
+  {
+    username: 'user3',
+    password: '123456',
+    role: 'user' as const,
+  },
+  {
+    username: 'user4',
+    password: '123456',
+    role: 'user' as const,
+  },
+  {
+    username: 'user5',
+    password: '123456',
+    role: 'user' as const,
+  },
+  {
+    username: 'user6',
+    password: '123456',
+    role: 'user' as const,
+  },
+  {
+    username: 'user7',
+    password: '123456',
+    role: 'user' as const,
+  },
+  {
+    username: 'user8',
+    password: '123456',
+    role: 'user' as const,
+  },
+  {
+    username: 'user9',
+    password: '123456',
     role: 'user' as const,
   },
 ];
@@ -80,6 +115,66 @@ const challenge3Baseline: QueryPayload = {
     { $sort: { _id: 1 } },
   ],
   limit: 10,
+};
+
+const challenge4Baseline: QueryPayload = {
+  type: 'find',
+  collection: 'products',
+  filter: { stock: { $lte: 20 } },
+  projection: { _id: 0, sku: 1, stock: 1 },
+  sort: { stock: 1 },
+  limit: 3,
+};
+
+const challenge5Baseline: QueryPayload = {
+  type: 'aggregate',
+  collection: 'products',
+  pipeline: [
+    {
+      $group: {
+        _id: '$category',
+        totalStock: { $sum: '$stock' },
+        productCount: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ],
+  limit: 10,
+};
+
+const challenge6Baseline: QueryPayload = {
+  type: 'find',
+  collection: 'orders',
+  filter: { status: { $in: ['pending', 'canceled'] } },
+  projection: { _id: 0, orderId: 1, status: 1, amount: 1 },
+  sort: { amount: -1 },
+  limit: 2,
+};
+
+const challenge7Baseline: QueryPayload = {
+  type: 'aggregate',
+  collection: 'orders',
+  pipeline: [
+    { $match: { status: 'paid' } },
+    {
+      $group: {
+        _id: '$customerId',
+        maxAmount: { $max: '$amount' },
+        orders: { $sum: 1 },
+      },
+    },
+    { $sort: { maxAmount: -1, _id: 1 } },
+  ],
+  limit: 3,
+};
+
+const challenge8Baseline: QueryPayload = {
+  type: 'find',
+  collection: 'products',
+  filter: { price: { $gte: 100, $lte: 500 } },
+  projection: { _id: 0, name: 1, price: 1 },
+  sort: { name: 1 },
+  limit: 4,
 };
 
 const shouldReset = process.env.SEED_RESET !== 'false';
@@ -175,6 +270,87 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       active: true,
       orderMatters: true,
     },
+    {
+      title: 'Productos con stock bajo',
+      description:
+        'Devuelve sku y stock de productos con stock <= 20, ordenados de menor a mayor stock y limitados a 3.',
+      difficulty: 'easy',
+      points: 100,
+      datasetCollection: 'products',
+      expectedResult: [
+        { sku: 'P-001', stock: 4 },
+        { sku: 'P-002', stock: 8 },
+        { sku: 'P-003', stock: 12 },
+      ],
+      baselineQuery: challenge4Baseline,
+      tags: ['find', 'filter', 'sort', 'projection'],
+      active: true,
+      orderMatters: true,
+    },
+    {
+      title: 'Stock total por categoria',
+      description:
+        'Agrupa productos por categoria y calcula stock total y cantidad de productos, ordenando por categoria.',
+      difficulty: 'medium',
+      points: 200,
+      datasetCollection: 'products',
+      expectedResult: [{ _id: 'tech', totalStock: 270, productCount: 7 }],
+      baselineQuery: challenge5Baseline,
+      tags: ['aggregate', 'group', 'sum'],
+      active: true,
+      orderMatters: true,
+    },
+    {
+      title: 'Pedidos no pagados mas altos',
+      description:
+        'Obtiene los pedidos con status pending o canceled, devolviendo orderId, status y amount, ordenados por amount desc limit 2.',
+      difficulty: 'easy',
+      points: 100,
+      datasetCollection: 'orders',
+      expectedResult: [
+        { orderId: 'O-1003', status: 'pending', amount: 900 },
+        { orderId: 'O-1008', status: 'canceled', amount: 500 },
+      ],
+      baselineQuery: challenge6Baseline,
+      tags: ['find', 'in', 'sort', 'limit'],
+      active: true,
+      orderMatters: true,
+    },
+    {
+      title: 'Maximo pago por cliente',
+      description:
+        'Para pedidos paid, calcula el monto maximo por customerId y la cantidad de pedidos paid por cliente.',
+      difficulty: 'hard',
+      points: 300,
+      datasetCollection: 'orders',
+      expectedResult: [
+        { _id: 'u2', maxAmount: 2500, orders: 2 },
+        { _id: 'u1', maxAmount: 1300, orders: 2 },
+        { _id: 'u3', maxAmount: 200, orders: 2 },
+      ],
+      baselineQuery: challenge7Baseline,
+      tags: ['aggregate', 'match', 'group', 'sort'],
+      active: true,
+      orderMatters: true,
+    },
+    {
+      title: 'Productos rango medio de precio',
+      description:
+        'Devuelve nombre y precio de productos con precio entre 100 y 500, ordenados por nombre y limitados a 4.',
+      difficulty: 'medium',
+      points: 200,
+      datasetCollection: 'products',
+      expectedResult: [
+        { name: 'Headphones Pro', price: 299 },
+        { name: 'Mechanical Keyboard', price: 129 },
+        { name: 'Monitor 4K', price: 420 },
+        { name: 'Tablet Lite', price: 380 },
+      ],
+      baselineQuery: challenge8Baseline,
+      tags: ['find', 'filter', 'sort'],
+      active: true,
+      orderMatters: true,
+    },
   ]);
 
   return new Map(challenges.map((challenge) => [challenge.title, challenge._id.toString()]));
@@ -190,11 +366,41 @@ const seedSampleSubmissions = async (
 
   const anaId = userIdsByUsername.get('ana');
   const luisId = userIdsByUsername.get('luis');
+  const mariaId = userIdsByUsername.get('maria');
+  const pedroId = userIdsByUsername.get('pedro');
+  const sofiaId = userIdsByUsername.get('sofia');
+  const diegoId = userIdsByUsername.get('diego');
+  const carlaId = userIdsByUsername.get('carla');
+  const juanId = userIdsByUsername.get('juan');
+  const elenaId = userIdsByUsername.get('elena');
   const challenge1Id = challengeIdsByTitle.get('Top 3 productos caros (price >= 100)');
   const challenge2Id = challengeIdsByTitle.get('Total pagado por cliente');
   const challenge3Id = challengeIdsByTitle.get('Conteo de pedidos por estado');
+  const challenge4Id = challengeIdsByTitle.get('Productos con stock bajo');
+  const challenge5Id = challengeIdsByTitle.get('Stock total por categoria');
+  const challenge6Id = challengeIdsByTitle.get('Pedidos no pagados mas altos');
+  const challenge7Id = challengeIdsByTitle.get('Maximo pago por cliente');
+  const challenge8Id = challengeIdsByTitle.get('Productos rango medio de precio');
 
-  if (!anaId || !luisId || !challenge1Id || !challenge2Id || !challenge3Id) {
+  if (
+    !anaId ||
+    !luisId ||
+    !mariaId ||
+    !pedroId ||
+    !sofiaId ||
+    !diegoId ||
+    !carlaId ||
+    !juanId ||
+    !elenaId ||
+    !challenge1Id ||
+    !challenge2Id ||
+    !challenge3Id ||
+    !challenge4Id ||
+    !challenge5Id ||
+    !challenge6Id ||
+    !challenge7Id ||
+    !challenge8Id
+  ) {
     throw new Error('Could not resolve user/challenge IDs for sample submissions');
   }
 
@@ -293,15 +499,270 @@ const seedSampleSubmissions = async (
         { _id: 'pending', count: 1 },
       ],
     },
+    {
+      userId: new Types.ObjectId(mariaId),
+      challengeId: new Types.ObjectId(challenge4Id),
+      query: challenge4Baseline,
+      status: 'evaluated',
+      isCorrect: true,
+      correctnessScore: 70,
+      efficiencyScore: 17.2,
+      queryQualityScore: 8.1,
+      normalizedScore: 95.3,
+      maxPoints: 100,
+      score: 92.3,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 5,
+          totalDocsExamined: 7,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [
+        { sku: 'P-001', stock: 4 },
+        { sku: 'P-002', stock: 8 },
+        { sku: 'P-003', stock: 12 },
+      ],
+    },
+    {
+      userId: new Types.ObjectId(pedroId),
+      challengeId: new Types.ObjectId(challenge5Id),
+      query: {
+        type: 'aggregate',
+        collection: 'products',
+        pipeline: [{ $group: { _id: '$category', totalStock: { $sum: '$stock' } } }],
+        limit: 10,
+      },
+      status: 'evaluated',
+      isCorrect: false,
+      correctnessScore: 0,
+      efficiencyScore: 0,
+      queryQualityScore: 0,
+      normalizedScore: 0,
+      maxPoints: 200,
+      score: 0,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 6,
+          totalDocsExamined: 7,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [{ _id: 'tech', totalStock: 270 }],
+    },
+    {
+      userId: new Types.ObjectId(sofiaId),
+      challengeId: new Types.ObjectId(challenge6Id),
+      query: challenge6Baseline,
+      status: 'evaluated',
+      isCorrect: true,
+      correctnessScore: 70,
+      efficiencyScore: 15.9,
+      queryQualityScore: 8.4,
+      normalizedScore: 94.3,
+      maxPoints: 100,
+      score: 89.2,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 5,
+          totalDocsExamined: 8,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [
+        { orderId: 'O-1003', status: 'pending', amount: 900 },
+        { orderId: 'O-1008', status: 'canceled', amount: 500 },
+      ],
+    },
+    {
+      userId: new Types.ObjectId(diegoId),
+      challengeId: new Types.ObjectId(challenge7Id),
+      query: challenge7Baseline,
+      status: 'evaluated',
+      isCorrect: true,
+      correctnessScore: 70,
+      efficiencyScore: 16.2,
+      queryQualityScore: 8.6,
+      normalizedScore: 94.8,
+      maxPoints: 300,
+      score: 284.4,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 7,
+          totalDocsExamined: 8,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [
+        { _id: 'u2', maxAmount: 2500, orders: 2 },
+        { _id: 'u1', maxAmount: 1300, orders: 2 },
+        { _id: 'u3', maxAmount: 200, orders: 2 },
+      ],
+    },
+    {
+      userId: new Types.ObjectId(carlaId),
+      challengeId: new Types.ObjectId(challenge8Id),
+      query: challenge8Baseline,
+      status: 'evaluated',
+      isCorrect: true,
+      correctnessScore: 70,
+      efficiencyScore: 17.5,
+      queryQualityScore: 8.7,
+      normalizedScore: 96.2,
+      maxPoints: 200,
+      score: 192.4,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 4,
+          totalDocsExamined: 7,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [
+        { name: 'Headphones Pro', price: 299 },
+        { name: 'Mechanical Keyboard', price: 129 },
+        { name: 'Monitor 4K', price: 420 },
+        { name: 'Tablet Lite', price: 380 },
+      ],
+    },
+    {
+      userId: new Types.ObjectId(juanId),
+      challengeId: new Types.ObjectId(challenge2Id),
+      query: challenge2Baseline,
+      status: 'pending',
+    },
+    {
+      userId: new Types.ObjectId(elenaId),
+      challengeId: new Types.ObjectId(challenge6Id),
+      query: {
+        type: 'find',
+        collection: 'orders',
+        filter: { $where: 'this.amount > 0' },
+        limit: 10,
+      },
+      status: 'error',
+      errorMessage: 'Query contains blocked operators',
+    },
+    {
+      userId: new Types.ObjectId(luisId),
+      challengeId: new Types.ObjectId(challenge1Id),
+      query: {
+        type: 'find',
+        collection: 'products',
+        filter: { price: { $gte: 100 } },
+        projection: { _id: 0, name: 1, price: 1 },
+        sort: { price: -1 },
+        limit: 2,
+      },
+      status: 'evaluated',
+      isCorrect: false,
+      correctnessScore: 0,
+      efficiencyScore: 0,
+      queryQualityScore: 0,
+      normalizedScore: 0,
+      maxPoints: 100,
+      score: 0,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 3,
+          totalDocsExamined: 4,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [
+        { name: 'Laptop Pro 14', price: 1800 },
+        { name: 'Smartphone X', price: 999 },
+      ],
+    },
+    {
+      userId: new Types.ObjectId(mariaId),
+      challengeId: new Types.ObjectId(challenge2Id),
+      query: challenge2Baseline,
+      status: 'evaluated',
+      isCorrect: true,
+      correctnessScore: 70,
+      efficiencyScore: 17.7,
+      queryQualityScore: 8.8,
+      normalizedScore: 96.5,
+      maxPoints: 200,
+      score: 193,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 6,
+          totalDocsExamined: 8,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [
+        { _id: 'u2', total: 3650 },
+        { _id: 'u1', total: 2500 },
+        { _id: 'u3', total: 370 },
+      ],
+    },
+    {
+      userId: new Types.ObjectId(pedroId),
+      challengeId: new Types.ObjectId(challenge5Id),
+      query: challenge5Baseline,
+      status: 'evaluated',
+      isCorrect: true,
+      correctnessScore: 70,
+      efficiencyScore: 16.1,
+      queryQualityScore: 8.3,
+      normalizedScore: 94.4,
+      maxPoints: 200,
+      score: 188.8,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 7,
+          totalDocsExamined: 7,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [{ _id: 'tech', totalStock: 270, productCount: 7 }],
+    },
+    {
+      userId: new Types.ObjectId(anaId),
+      challengeId: new Types.ObjectId(challenge8Id),
+      query: challenge8Baseline,
+      status: 'evaluated',
+      isCorrect: true,
+      correctnessScore: 70,
+      efficiencyScore: 16.9,
+      queryQualityScore: 8.5,
+      normalizedScore: 95.4,
+      maxPoints: 200,
+      score: 190.8,
+      metrics: {
+        submitted: {
+          executionTimeMillis: 4,
+          totalDocsExamined: 7,
+          totalKeysExamined: 0,
+        },
+      },
+      resultSample: [
+        { name: 'Headphones Pro', price: 299 },
+        { name: 'Mechanical Keyboard', price: 129 },
+        { name: 'Monitor 4K', price: 420 },
+        { name: 'Tablet Lite', price: 380 },
+      ],
+    },
   ]);
 };
 
 const printSeedSummary = (): void => {
   console.log('Seed completed successfully.');
   console.log('Test accounts:');
-  console.log('- admin / Admin12345!');
-  console.log('- ana / User12345!');
-  console.log('- luis / User12345!');
+  console.log('- admin / 123456');
+  console.log('- ana / 123456');
+  console.log('- luis / 123456');
+  console.log('- maria / 123456');
+  console.log('- pedro / 123456');
+  console.log('- sofia / 123456');
+  console.log('- diego / 123456');
+  console.log('- carla / 123456');
+  console.log('- juan / 123456');
+  console.log('- elena / 123456');
+  console.log('Seed data includes 8 active challenges and mixed submissions (evaluated, pending, error).');
 };
 
 const run = async (): Promise<void> => {

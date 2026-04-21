@@ -118,9 +118,18 @@ npm run seed
 
 Usuarios de prueba creados por el seed:
 
-- admin / Admin12345!
-- ana / User12345!
-- luis / User12345!
+- admin / 123456
+- ana / 123456
+- luis / 123456
+- maria / 123456
+- pedro / 123456
+- sofia / 123456
+- diego / 123456
+- carla / 123456
+- juan / 123456
+- elena / 123456
+
+El seed tambien crea mas challenges y submissions (evaluated, pending y error) para probar mejor leaderboard, filtros y endpoints admin.
 
 ## Correr con Docker
 
