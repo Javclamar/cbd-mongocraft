@@ -104,18 +104,17 @@ router.get('/challenges', async (req, res) => {
 });
 
 router.post('/challenges', async (req, res) => {
-  const { title, description, datasetCollection, expectedResult, baselineQuery } = req.body as {
+  const { title, description, datasetCollection, baselineQuery } = req.body as {
     title?: string;
     description?: string;
     datasetCollection?: string;
-    expectedResult?: unknown;
     baselineQuery?: unknown;
   };
 
-  if (!title || !description || !datasetCollection || expectedResult === undefined || !baselineQuery) {
+  if (!title || !description || !datasetCollection || !baselineQuery) {
     return res.status(400).json({
       message:
-        'Missing required fields: title, description, datasetCollection, expectedResult, baselineQuery',
+        'Missing required fields: title, description, datasetCollection, baselineQuery',
     });
   }
 

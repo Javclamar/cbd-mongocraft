@@ -7,21 +7,80 @@ import { UserModel } from '../models/user.model';
 import { QueryPayload } from '../types/query';
 import { recomputeUserStats } from '../services/user-stats.service';
 
-const productsSeed = [
+const baseProducts = [
   { sku: 'P-001', name: 'Laptop Pro 14', category: 'tech', price: 1800, stock: 4 },
   { sku: 'P-002', name: 'Smartphone X', category: 'tech', price: 999, stock: 8 },
   { sku: 'P-003', name: 'Monitor 4K', category: 'tech', price: 420, stock: 12 },
   { sku: 'P-004', name: 'Mouse Basic', category: 'tech', price: 35, stock: 150 },
-  {
-    sku: 'P-005',
-    name: 'Mechanical Keyboard',
-    category: 'tech',
-    price: 129,
-    stock: 40,
-  },
+  { sku: 'P-005', name: 'Mechanical Keyboard', category: 'tech', price: 129, stock: 40 },
   { sku: 'P-006', name: 'Headphones Pro', category: 'tech', price: 299, stock: 35 },
   { sku: 'P-007', name: 'Tablet Lite', category: 'tech', price: 380, stock: 21 },
+  { sku: 'P-008', name: 'Smartwatch Series 5', category: 'wearables', price: 249, stock: 50 },
+  { sku: 'P-009', name: 'Wireless Earbuds', category: 'audio', price: 89, stock: 100 },
+  { sku: 'P-010', name: 'Gaming Chair', category: 'furniture', price: 199, stock: 15 },
+  { sku: 'P-011', name: 'Desk Lamp LED', category: 'office', price: 29, stock: 80 },
+  { sku: 'P-012', name: 'External SSD 1TB', category: 'tech', price: 110, stock: 45 },
+  { sku: 'P-013', name: 'Bluetooth Speaker', category: 'audio', price: 59, stock: 60 },
+  { sku: 'P-014', name: 'Webcam 1080p', category: 'tech', price: 45, stock: 30 },
+  { sku: 'P-015', name: 'Microphone USB', category: 'audio', price: 75, stock: 25 },
+  { sku: 'P-016', name: 'USB-C Hub 7-in-1', category: 'accessories', price: 35, stock: 120 },
+  { sku: 'P-017', name: 'Ergonomic Mouse', category: 'tech', price: 45, stock: 65 },
+  { sku: 'P-018', name: 'Laptop Stand Aluminum', category: 'accessories', price: 25, stock: 90 },
+  { sku: 'P-019', name: 'Dual Monitor Arm', category: 'furniture', price: 65, stock: 20 },
+  { sku: 'P-020', name: 'Mech Keyboard Blue Switch', category: 'gaming', price: 110, stock: 35 },
+  { sku: 'P-021', name: 'Noise Cancelling Headphones', category: 'audio', price: 349, stock: 18 },
+  { sku: 'P-022', name: 'Tablet Pro 12"', category: 'tech', price: 850, stock: 10 },
+  { sku: 'P-023', name: 'Smartphone Mini', category: 'tech', price: 699, stock: 22 },
+  { sku: 'P-024', name: 'Wi-Fi 6 Router', category: 'networking', price: 130, stock: 40 },
+  { sku: 'P-025', name: 'Smart Display 8"', category: 'smart_home', price: 129, stock: 25 },
+  { sku: 'P-026', name: 'Action Camera 4K', category: 'photography', price: 299, stock: 15 },
+  { sku: 'P-027', name: 'Power Bank 20000mAh', category: 'accessories', price: 49, stock: 200 },
+  { sku: 'P-028', name: 'Wireless Charging Pad', category: 'accessories', price: 19, stock: 150 },
+  { sku: 'P-029', name: 'Gaming Mouse Pad XL', category: 'gaming', price: 22, stock: 85 },
+  { sku: 'P-030', name: 'HDMI Cable 2m', category: 'accessories', price: 9, stock: 300 },
+  { sku: 'P-031', name: 'DisplayPort Cable 1.4', category: 'accessories', price: 14, stock: 250 },
+  { sku: 'P-032', name: 'Ethernet Cable Cat8', category: 'networking', price: 12, stock: 400 },
+  { sku: 'P-033', name: 'Smart Bulb RGB', category: 'smart_home', price: 15, stock: 120 },
+  { sku: 'P-034', name: 'Smart Plug Mini', category: 'smart_home', price: 12, stock: 180 },
+  { sku: 'P-035', name: 'Security Camera Indoor', category: 'smart_home', price: 45, stock: 60 },
+  { sku: 'P-036', name: 'Video Doorbell', category: 'smart_home', price: 99, stock: 30 },
+  { sku: 'P-037', name: 'E-Reader Paper White', category: 'tech', price: 139, stock: 40 },
+  { sku: 'P-038', name: 'Portable Projector', category: 'video', price: 249, stock: 12 },
+  { sku: 'P-039', name: 'Soundbar 2.1', category: 'audio', price: 149, stock: 25 },
+  { sku: 'P-040', name: 'Over-ear Studio Monitor', category: 'audio', price: 199, stock: 14 },
+  { sku: 'P-041', name: 'MicroSD Card 256GB', category: 'storage', price: 35, stock: 250 },
+  { sku: 'P-042', name: 'USB Flash Drive 128GB', category: 'storage', price: 20, stock: 300 },
+  { sku: 'P-043', name: 'NAS Storage 2-Bay', category: 'networking', price: 299, stock: 8 },
+  { sku: 'P-044', name: 'Drawing Tablet', category: 'tech', price: 80, stock: 35 },
+  { sku: 'P-045', name: 'VR Headset Basic', category: 'gaming', price: 299, stock: 15 },
+  { sku: 'P-046', name: 'Smart Thermostat', category: 'smart_home', price: 199, stock: 20 },
+  { sku: 'P-047', name: 'Fitness Tracker', category: 'wearables', price: 49, stock: 110 },
+  { sku: 'P-048', name: 'Ring Light with Tripod', category: 'photography', price: 40, stock: 55 },
+  { sku: 'P-049', name: 'Green Screen Collapsible', category: 'photography', price: 65, stock: 22 },
+  { sku: 'P-050', name: 'Capture Card 1080p', category: 'gaming', price: 85, stock: 40 }
 ];
+
+// 2. Generador de relleno (Crea automáticamente el resto para llegar a 250)
+const categories = ['tech', 'gaming', 'audio', 'office', 'smart_home', 'wearables', 'accessories'];
+const adjectives = ['Pro', 'Lite', 'Max', 'Ultra', 'Plus', 'Basic', 'Advanced', 'V2', 'Edition', 'Mini'];
+const types = ['Cable', 'Adapter', 'Stand', 'Charger', 'Case', 'Pad', 'Hub', 'Lens', 'Mount', 'Controller'];
+
+const generatedProducts = Array.from({ length: 1050 - baseProducts.length }).map((_, index) => {
+  const skuNumber = index + baseProducts.length + 1;
+  const randomType = types[Math.floor(Math.random() * types.length)];
+  const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
+  
+  return {
+    sku: `P-${skuNumber.toString().padStart(3, '0')}`,
+    name: `${randomType} ${randomAdj}`,
+    category: categories[Math.floor(Math.random() * categories.length)],
+    price: Math.floor(Math.random() * 200) + 5, // Precio aleatorio entre 5 y 205
+    stock: Math.floor(Math.random() * 150) + 1, // Stock aleatorio entre 1 y 150
+  };
+});
+
+// 3. Este es el array final que debes usar o exportar (contiene exactamente 250 objetos)
+export const productsSeed = [...baseProducts, ...generatedProducts];
 
 const ordersSeed = [
   { orderId: 'O-1001', customerId: 'u1', status: 'paid', amount: 1200 },
@@ -35,56 +94,16 @@ const ordersSeed = [
 ];
 
 const usersSeed = [
-  {
-    username: 'admin',
-    password: '123456',
-    role: 'admin' as const,
-  },
-  {
-    username: 'ana',
-    password: '123456',
-    role: 'user' as const,
-  },
-  {
-    username: 'luis',
-    password: '123456',
-    role: 'user' as const,
-  },
-  {
-    username: 'maria',
-    password: '123456',
-    role: 'user' as const,
-  },
-  {
-    username: 'pedro',
-    password: '123456',
-    role: 'user' as const,
-  },
-  {
-    username: 'sofia',
-    password: '123456',
-    role: 'user' as const,
-  },
-  {
-    username: 'diego',
-    password: '123456',
-    role: 'user' as const,
-  },
-  {
-    username: 'carla',
-    password: '123456',
-    role: 'user' as const,
-  },
-  {
-    username: 'juan',
-    password: '123456',
-    role: 'user' as const,
-  },
-  {
-    username: 'elena',
-    password: '123456',
-    role: 'user' as const,
-  },
+  { username: 'admin', password: '123456', role: 'admin' as const },
+  { username: 'ana', password: '123456', role: 'user' as const },
+  { username: 'luis', password: '123456', role: 'user' as const },
+  { username: 'maria', password: '123456', role: 'user' as const },
+  { username: 'pedro', password: '123456', role: 'user' as const },
+  { username: 'sofia', password: '123456', role: 'user' as const },
+  { username: 'diego', password: '123456', role: 'user' as const },
+  { username: 'carla', password: '123456', role: 'user' as const },
+  { username: 'juan', password: '123456', role: 'user' as const },
+  { username: 'elena', password: '123456', role: 'user' as const },
 ];
 
 const challenge1Baseline: QueryPayload = {

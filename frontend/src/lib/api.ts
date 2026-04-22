@@ -2,6 +2,44 @@ import { reactive } from 'vue';
 
 const BASE_URL = 'http://localhost:3001/api';
 
+export type ApiErrorKind = 'network' | 'validation' | 'http' | 'unknown';
+
+export class ApiFetchError extends Error {
+  statusCode: number | null;
+  kind: ApiErrorKind;
+  backendMessage: string | null;
+  payload: unknown;
+
+  constructor(params: {
+    message: string;
+    statusCode?: number | null;
+    kind: ApiErrorKind;
+    backendMessage?: string | null;
+    payload?: unknown;
+  }) {
+    super(params.message);
+    this.name = 'ApiFetchError';
+    this.statusCode = params.statusCode ?? null;
+    this.kind = params.kind;
+    this.backendMessage = params.backendMessage ?? null;
+    this.payload = params.payload;
+  }
+
+  get isNetworkError(): boolean {
+    return this.kind === 'network';
+  }
+
+  get isValidationError(): boolean {
+    return this.kind === 'validation';
+  }
+}
+
+interface ApiErrorPayload {
+  message?: string;
+  error?: string;
+  errors?: Array<{ message?: string } | string>;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -48,15 +86,45 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: 'include', // Important for cookies (refresh tokens)
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include', // Important for cookies (refresh tokens)
+    });
+  } catch (error) {
+    throw new ApiFetchError({
+      message: 'Unable to reach the server. Please check your connection and try again.',
+      kind: 'network',
+      backendMessage: error instanceof Error ? error.message : null,
+      payload: null,
+    });
+  }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(errorData.message || response.statusText);
+    const contentType = response.headers.get('content-type') || '';
+    let errorData: ApiErrorPayload | null = null;
+
+    if (contentType.includes('application/json')) {
+      errorData = await response.json().catch(() => null);
+    } else {
+      const errorText = await response.text().catch(() => '');
+      errorData = errorText ? { message: errorText } : null;
+    }
+
+    const backendMessage = errorData?.message || errorData?.error || null;
+    const message = backendMessage || response.statusText || 'An unknown error occurred';
+    const kind: ApiErrorKind = response.status === 400 || response.status === 422 ? 'validation' : 'http';
+
+    throw new ApiFetchError({
+      message,
+      statusCode: response.status,
+      kind,
+      backendMessage,
+      payload: errorData,
+    });
   }
 
   return response.json() as Promise<T>;
