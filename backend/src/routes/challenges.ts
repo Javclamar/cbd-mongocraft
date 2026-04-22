@@ -204,12 +204,12 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', requireAuth, requireRole('admin'), async (req, res) => {
-  const { title, description, datasetCollection, expectedResult, baselineQuery } = req.body;
+  const { title, description, datasetCollection, baselineQuery } = req.body;
 
-  if (!title || !description || !datasetCollection || expectedResult === undefined || !baselineQuery) {
+  if (!title || !description || !datasetCollection || !baselineQuery) {
     return res.status(400).json({
       message:
-        'Missing required fields: title, description, datasetCollection, expectedResult, baselineQuery',
+        'Missing required fields: title, description, datasetCollection, baselineQuery',
     });
   }
 

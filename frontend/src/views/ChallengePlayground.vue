@@ -304,6 +304,8 @@ async function runCode() {
       })
     })
 
+    console.log(response)
+
     data.value = response
     queryMetrics.value = extractQueryMetrics(response)
   } catch (error) {
@@ -358,7 +360,7 @@ async function runCode() {
     </div>
 
     <div v-else-if="challenge" class="flex-grow flex overflow-hidden">
-      <div class="w-1/3 border-r border-[#1e2532] bg-[#0f1319] flex flex-col overflow-y-auto custom-scrollbar">
+      <div class="w-[25%] border-r border-[#1e2532] bg-[#0f1319] flex flex-col overflow-y-auto custom-scrollbar">
         <div class="p-6">
           <h2 class="text-xs font-mono uppercase tracking-wider text-[#8a94a6] mb-4">Instructions</h2>
           <div class="prose prose-invert prose-sm max-w-none font-sans text-gray-300 leading-relaxed whitespace-pre-wrap">
@@ -379,7 +381,7 @@ async function runCode() {
         </div>
       </div>
 
-      <div class="flex-grow flex flex-col w-2/3">
+      <div class="flex-grow flex flex-col w-[70%]">
         <div class="flex-grow relative border-b border-[#1e2532]">
           <vue-monaco-editor
             v-model:value="code"

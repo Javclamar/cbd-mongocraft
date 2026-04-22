@@ -10,23 +10,6 @@ interface ExecutionStatsSummary {
   nReturned: number;
 }
 
-interface QueryQualityBreakdown {
-  structuralScore: number;
-  metricsScore: number;
-  penalties: number;
-  finalQualityScore: number;
-  details: {
-    hasProjection?: boolean;
-    hasExplicitLimit: boolean;
-    hasRequiredSort?: boolean;
-    hasEarlyMatch?: boolean;
-    submittedPipelineStages?: number;
-    baselinePipelineStages?: number;
-    docsPerResult: number;
-    usesIndexSignals: boolean;
-  };
-}
-
 interface QueryExecutionResult {
   result: unknown[];
   stats: ExecutionStatsSummary;
@@ -43,7 +26,6 @@ export interface EvaluationResult {
   metrics: {
     submitted: ExecutionStatsSummary;
     baseline?: ExecutionStatsSummary;
-    quality: QueryQualityBreakdown;
   };
   resultSample: unknown[];
 }
@@ -306,161 +288,31 @@ const calculateEfficiencyScore = (
   return (timeRatio * 0.5 + docsRatio * 0.3 + keysRatio * 0.2) * 20;
 };
 
-const hasObjectKeys = (value: unknown): boolean => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return false;
-  }
-
-  return Object.keys(value as Record<string, unknown>).length > 0;
-};
-
-const getPipelineStagesCount = (pipeline?: Array<Record<string, unknown>>): number => {
-  return Array.isArray(pipeline) ? pipeline.length : 0;
-};
-
-const calculateQueryQuality = (
-  challenge: IChallenge,
-  submittedQuery: QueryPayload,
-  submittedStats: ExecutionStatsSummary,
-  baselineStats: ExecutionStatsSummary | undefined,
-  resultCount: number,
-): QueryQualityBreakdown => {
-  let structuralScore = 0;
-  let metricsScore = 0;
-  let penalties = 0;
-
-  const hasExplicitLimit = typeof submittedQuery.limit === 'number' && submittedQuery.limit > 0;
-  const docsPerResult =
-    submittedStats.totalDocsExamined / Math.max(1, resultCount);
-  const usesIndexSignals = submittedStats.totalKeysExamined > 0;
-
-  const details: QueryQualityBreakdown['details'] = {
-    hasExplicitLimit,
-    docsPerResult: round2(docsPerResult),
-    usesIndexSignals,
-  };
-
-  if (submittedQuery.type === 'find') {
-    const hasProjection = hasObjectKeys(submittedQuery.projection);
-    const baselineNeedsSort = hasObjectKeys(challenge.baselineQuery.sort);
-    const hasRequiredSort = baselineNeedsSort ? hasObjectKeys(submittedQuery.sort) : true;
-
-    if (hasProjection) {
-      structuralScore += 2;
-    }
-
-    if (hasExplicitLimit) {
-      structuralScore += 2;
-    }
-
-    if (hasRequiredSort) {
-      structuralScore += 2;
-    }
-
-    details.hasProjection = hasProjection;
-    details.hasRequiredSort = hasRequiredSort;
-  }
-
-  if (submittedQuery.type === 'aggregate') {
-    const submittedPipeline = Array.isArray(submittedQuery.pipeline)
-      ? submittedQuery.pipeline
-      : [];
-    const baselinePipeline = Array.isArray(challenge.baselineQuery.pipeline)
-      ? challenge.baselineQuery.pipeline
-      : [];
-
-    const hasEarlyMatch =
-      submittedPipeline.length > 0 &&
-      Object.prototype.hasOwnProperty.call(submittedPipeline[0], '$match');
-
-    if (hasEarlyMatch) {
-      structuralScore += 2;
-    }
-
-    if (hasExplicitLimit) {
-      structuralScore += 2;
-    }
-
-    if (submittedPipeline.length <= baselinePipeline.length + 1) {
-      structuralScore += 2;
-    } else if (submittedPipeline.length <= baselinePipeline.length + 3) {
-      structuralScore += 1;
-    }
-
-    details.hasEarlyMatch = hasEarlyMatch;
-    details.submittedPipelineStages = getPipelineStagesCount(submittedQuery.pipeline);
-    details.baselinePipelineStages = getPipelineStagesCount(challenge.baselineQuery.pipeline);
-  }
-
-  if (baselineStats) {
-    metricsScore += scoreFromRatio(baselineStats.totalDocsExamined, submittedStats.totalDocsExamined) * 2;
-    metricsScore += scoreFromRatio(baselineStats.totalKeysExamined, submittedStats.totalKeysExamined) * 1;
-    metricsScore += scoreFromRatio(baselineStats.executionTimeMillis, submittedStats.executionTimeMillis) * 1;
-  }
-
-  if (docsPerResult <= 10) {
-    metricsScore += 1;
-  } else if (docsPerResult <= 30) {
-    metricsScore += 0.5;
-  } else {
-    penalties -= 1;
-  }
-
-  if (usesIndexSignals) {
-    metricsScore += 0.5;
-  } else {
-    penalties -= 0.5;
-  }
-
-  const finalQualityScore = clamp(structuralScore + metricsScore + penalties, 0, 10);
-
-  return {
-    structuralScore: round2(structuralScore),
-    metricsScore: round2(metricsScore),
-    penalties: round2(penalties),
-    finalQualityScore: round2(finalQualityScore),
-    details,
-  };
-};
-
 export const evaluateChallengeSubmission = async (
   challenge: IChallenge,
   submittedQuery: QueryPayload,
   sandboxDb: Db,
 ): Promise<EvaluationResult> => {
   validateQuery(challenge.datasetCollection, submittedQuery);
+  validateQuery(challenge.datasetCollection, challenge.baselineQuery);
 
-  const submittedExecution = await runQuery(sandboxDb, submittedQuery);
-  const normalizedExpected = normalizeValue(challenge.expectedResult, challenge.orderMatters);
+  const [submittedExecution, baselineExecution] = await Promise.all([
+    runQuery(sandboxDb, submittedQuery),
+    runQuery(sandboxDb, challenge.baselineQuery),
+  ]);
+
+  const normalizedExpected = normalizeValue(baselineExecution.result, challenge.orderMatters);
   const normalizedResult = normalizeValue(submittedExecution.result, challenge.orderMatters);
 
   const isCorrect = JSON.stringify(normalizedResult) === JSON.stringify(normalizedExpected);
-  const correctnessScore = isCorrect ? 70 : 0;
+  const correctnessScore = isCorrect ? 80 : 0;
 
-  let baselineStats: ExecutionStatsSummary | undefined;
+  const baselineStats: ExecutionStatsSummary = baselineExecution.stats;
   let efficiencyScore = 0;
-  let queryQuality = calculateQueryQuality(
-    challenge,
-    submittedQuery,
-    submittedExecution.stats,
-    undefined,
-    submittedExecution.result.length,
-  );
-  let queryQualityScore = 0;
+  const queryQualityScore = 0;
 
   if (isCorrect) {
-    validateQuery(challenge.datasetCollection, challenge.baselineQuery);
-    const baselineExecution = await runQuery(sandboxDb, challenge.baselineQuery);
-    baselineStats = baselineExecution.stats;
     efficiencyScore = calculateEfficiencyScore(submittedExecution.stats, baselineExecution.stats);
-    queryQuality = calculateQueryQuality(
-      challenge,
-      submittedQuery,
-      submittedExecution.stats,
-      baselineExecution.stats,
-      submittedExecution.result.length,
-    );
-    queryQualityScore = queryQuality.finalQualityScore;
   }
 
   const normalizedScore = round2(correctnessScore + efficiencyScore + queryQualityScore);
@@ -478,7 +330,6 @@ export const evaluateChallengeSubmission = async (
     metrics: {
       submitted: submittedExecution.stats,
       baseline: baselineStats,
-      quality: queryQuality,
     },
     resultSample: submittedExecution.result.slice(0, 10),
   };
