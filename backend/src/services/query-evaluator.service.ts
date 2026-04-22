@@ -7,6 +7,7 @@ interface ExecutionStatsSummary {
   executionTimeMillis: number;
   totalDocsExamined: number;
   totalKeysExamined: number;
+  nReturned: number;
 }
 
 interface QueryQualityBreakdown {
@@ -130,48 +131,82 @@ const extractExecutionStats = (explainOutput: unknown): ExecutionStatsSummary =>
     executionTimeMillis: 0,
     totalDocsExamined: 0,
     totalKeysExamined: 0,
+    nReturned: 0,
   };
 
   if (!explainOutput || typeof explainOutput !== 'object') {
     return fallbackStats;
   }
 
-  const topLevel = explainOutput as Record<string, unknown>;
-  const topExecutionStats = topLevel.executionStats as Record<string, unknown> | undefined;
+  const toFiniteNumber = (value: unknown): number | null => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
 
-  if (topExecutionStats) {
-    return {
-      executionTimeMillis: Number(topExecutionStats.executionTimeMillis || 0),
-      totalDocsExamined: Number(topExecutionStats.totalDocsExamined || 0),
-      totalKeysExamined: Number(topExecutionStats.totalKeysExamined || 0),
-    };
-  }
+    if (typeof value === 'string') {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
 
-  const stages = topLevel.stages;
-  if (Array.isArray(stages)) {
-    for (const stage of stages) {
-      const cursorStats =
-        stage &&
-        typeof stage === 'object' &&
-        '$cursor' in stage &&
-        (stage as Record<string, unknown>).$cursor &&
-        typeof (stage as Record<string, unknown>).$cursor === 'object'
-          ? ((stage as Record<string, unknown>).$cursor as Record<string, unknown>)
-              .executionStats
-          : undefined;
+    return null;
+  };
 
-      if (cursorStats && typeof cursorStats === 'object') {
-        const stats = cursorStats as Record<string, unknown>;
-        return {
-          executionTimeMillis: Number(stats.executionTimeMillis || 0),
-          totalDocsExamined: Number(stats.totalDocsExamined || 0),
-          totalKeysExamined: Number(stats.totalKeysExamined || 0),
-        };
+  const executionTimeCandidates: number[] = [];
+  const docsCandidates: number[] = [];
+  const keysCandidates: number[] = [];
+  const returnedCandidates: number[] = [];
+  const seen = new Set<unknown>();
+
+  const collectFromObject = (value: unknown): void => {
+    if (!value || typeof value !== 'object' || seen.has(value)) {
+      return;
+    }
+
+    seen.add(value);
+    const node = value as Record<string, unknown>;
+
+    const executionTimeMillis =
+      toFiniteNumber(node.executionTimeMillis) ??
+      toFiniteNumber(node.executionTimeMillisEstimate);
+    const totalDocsExamined = toFiniteNumber(node.totalDocsExamined);
+    const totalKeysExamined = toFiniteNumber(node.totalKeysExamined);
+    const nReturned = toFiniteNumber(node.nReturned);
+
+    if (executionTimeMillis !== null) {
+      executionTimeCandidates.push(executionTimeMillis);
+    }
+
+    if (totalDocsExamined !== null) {
+      docsCandidates.push(totalDocsExamined);
+    }
+
+    if (totalKeysExamined !== null) {
+      keysCandidates.push(totalKeysExamined);
+    }
+
+    if (nReturned !== null) {
+      returnedCandidates.push(nReturned);
+    }
+
+    for (const nestedValue of Object.values(node)) {
+      if (Array.isArray(nestedValue)) {
+        for (const item of nestedValue) {
+          collectFromObject(item);
+        }
+      } else {
+        collectFromObject(nestedValue);
       }
     }
-  }
+  };
 
-  return fallbackStats;
+  collectFromObject(explainOutput);
+
+  return {
+    executionTimeMillis: executionTimeCandidates.length > 0 ? Math.max(...executionTimeCandidates) : 0,
+    totalDocsExamined: docsCandidates.length > 0 ? Math.max(...docsCandidates) : 0,
+    totalKeysExamined: keysCandidates.length > 0 ? Math.max(...keysCandidates) : 0,
+    nReturned: returnedCandidates.length > 0 ? Math.max(...returnedCandidates) : 0,
+  };
 };
 
 const runQuery = async (db: Db, query: QueryPayload): Promise<QueryExecutionResult> => {
@@ -199,7 +234,10 @@ const runQuery = async (db: Db, query: QueryPayload): Promise<QueryExecutionResu
 
     return {
       result,
-      stats: extractExecutionStats(explain),
+      stats: {
+        ...extractExecutionStats(explain),
+        nReturned: result.length,
+      },
     };
   }
 
@@ -218,11 +256,14 @@ const runQuery = async (db: Db, query: QueryPayload): Promise<QueryExecutionResu
       allowDiskUse: false,
       maxTimeMS: config.queryTimeout,
     })
-    .explain();
+    .explain('executionStats');
 
   return {
     result,
-    stats: extractExecutionStats(explain),
+    stats: {
+      ...extractExecutionStats(explain),
+      nReturned: result.length,
+    },
   };
 };
 

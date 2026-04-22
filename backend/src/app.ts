@@ -16,13 +16,14 @@ import userRoutes from './routes/users';
 dotenv.config();
 
 const app = express();
+/*
 const apiLimiter = rateLimit({
 	windowMs: config.rateLimit.windowMs,
 	max: config.rateLimit.max,
 	standardHeaders: true,
 	legacyHeaders: false,
 });
-
+*/
 app.use(helmet());
 app.use(
 	cors({
@@ -33,7 +34,7 @@ app.use(
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
-app.use('/api', apiLimiter);
+//app.use('/api', apiLimiter);
 
 app.get('/api/health', (_req, res) => {
 	const dbStatus = getDbStatus();
