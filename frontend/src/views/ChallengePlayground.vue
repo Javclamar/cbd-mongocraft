@@ -15,6 +15,7 @@ const challengeId = route.params.id as string
 const loading = ref(true)
 const executing = ref(false)
 const challenge = ref<any>(null)
+const showComparison = ref(false)
 
 const code = ref(`// Write your query here\n// Example:\n// db.collection.find({})\n`)
 
@@ -58,6 +59,7 @@ async function runCode() {
   executing.value = true
   errorMsg.value = null
   executionResult.value = null
+  showComparison.value = false
 
   try {
     const queryPayload: QueryPayload = parseMongoQuery(code.value)
@@ -202,9 +204,41 @@ async function runCode() {
                 </div>
               </div>
               
-              <div v-if="executionResult.resultSample && executionResult.resultSample.length > 0">
+              <div v-if="!executionResult.isCorrect && executionResult.status === 'evaluated'" class="mt-6">
+                <div class="flex items-center justify-between mb-4">
+                  <p class="text-[10px] uppercase text-[#8a94a6]">Output Comparison</p>
+                  <button 
+                    @click="showComparison = !showComparison" 
+                    class="text-xs font-mono text-[#8a94a6] hover:text-white transition-colors underline underline-offset-2"
+                  >
+                    {{ showComparison ? 'Hide Expected Output' : 'Reveal Expected Output' }}
+                  </button>
+                </div>
+                
+                <div v-if="showComparison" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div class="flex flex-col">
+                    <div class="px-3 py-1.5 bg-[#ef4444]/10 border border-[#ef4444]/20 border-b-0 rounded-t-sm inline-block w-fit">
+                      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#ef4444]">Your Output</span>
+                    </div>
+                    <pre class="flex-grow bg-[#0f1319] p-4 rounded-sm rounded-tl-none border border-[#ef4444]/30 overflow-x-auto text-xs text-[#e5e7eb] custom-scrollbar">{{ executionResult.resultSample?.length ? JSON.stringify(executionResult.resultSample, null, 2) : '[]\n// No documents matched your query.' }}</pre>
+                  </div>
+                  <div class="flex flex-col">
+                    <div class="px-3 py-1.5 bg-[#00ed64]/10 border border-[#00ed64]/20 border-b-0 rounded-t-sm inline-block w-fit">
+                      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#00ed64]">Expected Output</span>
+                    </div>
+                    <pre class="flex-grow bg-[#0f1319] p-4 rounded-sm rounded-tl-none border border-[#00ed64]/30 overflow-x-auto text-xs text-[#e5e7eb] custom-scrollbar">{{ JSON.stringify(challenge.expectedResult, null, 2) }}</pre>
+                  </div>
+                </div>
+                <div v-else class="flex flex-col">
+                   <div class="px-3 py-1.5 bg-[#1e2532]/50 border border-[#1e2532] border-b-0 rounded-t-sm inline-block w-fit">
+                      <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#8a94a6]">Your Output</span>
+                   </div>
+                   <pre class="flex-grow bg-[#0f1319] p-4 rounded-sm rounded-tl-none border border-[#1e2532] overflow-x-auto text-xs text-[#e5e7eb] custom-scrollbar">{{ executionResult.resultSample?.length ? JSON.stringify(executionResult.resultSample, null, 2) : '[]\n// No documents matched your query.' }}</pre>
+                </div>
+              </div>
+              <div v-else-if="executionResult.resultSample && executionResult.resultSample.length > 0">
                  <p class="text-[10px] uppercase text-[#8a94a6] mb-2 mt-4">Result Sample</p>
-                 <pre class="bg-[#0f1319] p-4 rounded-sm border border-[#1e2532] overflow-x-auto text-xs text-[#e5e7eb]">{{ JSON.stringify(executionResult.resultSample, null, 2) }}</pre>
+                 <pre class="bg-[#0f1319] p-4 rounded-sm border border-[#1e2532] overflow-x-auto text-xs text-[#e5e7eb] custom-scrollbar">{{ JSON.stringify(executionResult.resultSample, null, 2) }}</pre>
               </div>
               <div v-else-if="executionResult.status === 'evaluated'">
                  <p class="text-[10px] uppercase text-[#8a94a6] mb-2 mt-4">Result Sample</p>
