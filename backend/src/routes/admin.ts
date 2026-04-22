@@ -114,6 +114,7 @@ router.patch('/challenges/:id', async (req, res) => {
     'expectedResult',
     'baselineQuery',
     'tags',
+    'notes',
     'active',
     'orderMatters',
   ]);

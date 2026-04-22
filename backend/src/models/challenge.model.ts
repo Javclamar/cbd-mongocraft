@@ -95,6 +95,10 @@ const challengeSchema = new Schema(
       type: [String],
       default: [],
     },
+    notes: {
+      type: [String],
+      default: [],
+    },
     active: {
       type: Boolean,
       default: true,

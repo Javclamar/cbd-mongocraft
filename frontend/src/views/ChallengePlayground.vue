@@ -119,6 +119,13 @@ async function runCode() {
             {{ challenge.description }}
           </div>
           
+          <div v-if="challenge.notes && challenge.notes.length > 0" class="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-sm">
+            <h3 class="text-[10px] font-mono uppercase tracking-wider text-blue-400 mb-2">Notes</h3>
+            <ul class="list-disc list-inside text-sm font-sans text-gray-300 space-y-1">
+              <li v-for="(note, index) in challenge.notes" :key="index">{{ note }}</li>
+            </ul>
+          </div>
+          
           <div class="mt-8 p-4 bg-[#13171e] border border-[#1e2532] rounded-sm">
             <h3 class="text-[10px] font-mono uppercase tracking-wider text-[#8a94a6] mb-2">Target Collection</h3>
             <code class="text-sm font-mono text-[#00ed64]">db.{{ challenge.datasetCollection }}</code>
