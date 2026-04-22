@@ -4,6 +4,7 @@ import Challenges from '@/views/Challenges.vue'
 import ChallengePlayground from '@/views/ChallengePlayground.vue'
 
 import AdminDashboard from '@/views/AdminDashboard.vue'
+import Leaderboard from '@/views/Leaderboard.vue'
 import { authState } from '@/lib/api'
 
 const router = createRouter({
@@ -23,6 +24,11 @@ const router = createRouter({
       path: '/challenges/:id',
       name: 'challenge-playground',
       component: ChallengePlayground
+    },
+    {
+      path: '/leaderboard',
+      name: 'leaderboard',
+      component: Leaderboard
     },
     {
       path: '/admin',
