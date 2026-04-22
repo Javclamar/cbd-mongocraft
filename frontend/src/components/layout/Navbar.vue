@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { authState, authApi } from '@/lib/api'
-import { LogOut, User as UserIcon } from 'lucide-vue-next'
+import { LogOut } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()

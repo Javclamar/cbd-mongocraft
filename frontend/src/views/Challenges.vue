@@ -257,24 +257,27 @@ const difficultyBar: Record<string, string> = {
         </div>
 
         <div class="flex justify-end">
-          <button
+          <router-link
             v-if="challenge.status === 'completed'"
+            :to="'/challenges/' + challenge.id"
             class="text-[11px] font-mono text-[#8a94a6] hover:text-white transition-colors border border-[#1e2532] px-3 py-1.5 rounded-sm hover:border-white/30"
           >
             Review
-          </button>
-          <button
+          </router-link>
+          <router-link
             v-else-if="challenge.status === 'in-progress'"
-            class="text-[11px] font-mono font-bold text-black bg-[#00ed64] hover:bg-[#00ed64]/90 px-4 py-1.5 rounded-sm flex items-center gap-1.5 transition-colors"
+            :to="'/challenges/' + challenge.id"
+            class="text-[11px] font-mono font-bold text-black bg-[#00ed64] hover:bg-[#00ed64]/90 px-4 py-1.5 rounded-sm flex items-center gap-1.5 transition-colors inline-flex"
           >
             Continue <ArrowRight class="w-3 h-3" />
-          </button>
-          <button
+          </router-link>
+          <router-link
             v-else
+            :to="'/challenges/' + challenge.id"
             class="text-[11px] font-mono text-[#8a94a6] hover:text-[#00ed64] transition-colors border border-[#1e2532] hover:border-[#00ed64]/50 px-3 py-1.5 rounded-sm"
           >
             Start
-          </button>
+          </router-link>
         </div>
       </div>
 
