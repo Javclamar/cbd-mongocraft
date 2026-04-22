@@ -35,6 +35,14 @@ const handleLogout = async () => {
             ]"
           >Challenges</RouterLink>
           <a href="#" class="border-b-2 border-transparent hover:text-white transition-colors h-16 flex items-center">Leaderboard</a>
+          <RouterLink
+            v-if="authState.user?.role === 'admin'"
+            to="/admin"
+            :class="[
+              'h-16 flex items-center border-b-2 transition-colors',
+              route.path === '/admin' ? 'text-[#00ed64] border-[#00ed64]' : 'border-transparent hover:text-white'
+            ]"
+          >Admin Console</RouterLink>
         </div>
       </div>
       <div class="flex items-center gap-4">

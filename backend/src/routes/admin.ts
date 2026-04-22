@@ -48,6 +48,31 @@ router.get('/summary', async (_req, res) => {
   });
 });
 
+router.get('/users', async (req, res) => {
+  const page = parseIntWithBounds(req.query.page, 1, 1, 100000);
+  const limit = parseIntWithBounds(req.query.limit, 20, 1, 100);
+  const skip = (page - 1) * limit;
+
+  const [items, total] = await Promise.all([
+    UserModel.find({})
+      .select('-passwordHash -refreshSessions')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    UserModel.countDocuments({}),
+  ]);
+
+  return res.json({
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  });
+});
+
 router.get('/challenges', async (req, res) => {
   const page = parseIntWithBounds(req.query.page, 1, 1, 100000);
   const limit = parseIntWithBounds(req.query.limit, 20, 1, 100);

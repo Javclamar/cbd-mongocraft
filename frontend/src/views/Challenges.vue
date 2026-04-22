@@ -122,6 +122,9 @@ const difficultyBar: Record<string, string> = {
         <p class="text-[#8a94a6] text-sm">
           Welcome back, <span class="text-[#00ed64] font-mono">{{ player.username }}</span>. Let's go!
         </p>
+        <router-link v-if="authState.user?.role === 'admin'" to="/admin" class="mt-4 inline-block bg-[#1e2532]/50 border border-[#1e2532] text-[#8a94a6] hover:text-white hover:border-[#00ed64]/50 px-3 py-1.5 rounded-sm text-[10px] font-mono uppercase tracking-wider transition-colors">
+          Admin Console
+        </router-link>
       </div>
 
       <div class="bg-[#13171e] border border-[#1e2532] rounded-sm p-5 flex gap-8">

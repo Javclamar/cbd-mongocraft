@@ -3,6 +3,9 @@ import Home from '@/views/Home.vue'
 import Challenges from '@/views/Challenges.vue'
 import ChallengePlayground from '@/views/ChallengePlayground.vue'
 
+import AdminDashboard from '@/views/AdminDashboard.vue'
+import { authState } from '@/lib/api'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -20,6 +23,18 @@ const router = createRouter({
       path: '/challenges/:id',
       name: 'challenge-playground',
       component: ChallengePlayground
+    },
+    {
+      path: '/admin',
+      name: 'admin-dashboard',
+      component: AdminDashboard,
+      beforeEnter: (to, from, next) => {
+        if (!authState.isAuthenticated || authState.user?.role !== 'admin') {
+          next('/');
+        } else {
+          next();
+        }
+      }
     }
   ]
 })

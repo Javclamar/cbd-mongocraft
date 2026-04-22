@@ -41,47 +41,47 @@ const usersSeed = [
     role: 'admin' as const,
   },
   {
-    username: 'user1',
+    username: 'ana',
     password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'user2',
+    username: 'luis',
     password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'user3',
+    username: 'maria',
     password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'user4',
+    username: 'pedro',
     password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'user5',
+    username: 'sofia',
     password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'user6',
+    username: 'diego',
     password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'user7',
+    username: 'carla',
     password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'user8',
+    username: 'juan',
     password: '123456',
     role: 'user' as const,
   },
   {
-    username: 'user9',
+    username: 'elena',
     password: '123456',
     role: 'user' as const,
   },
@@ -233,6 +233,11 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       ],
       baselineQuery: challenge1Baseline,
       tags: ['find', 'filter', 'sort', 'limit'],
+      notes: [
+        "El resultado debe contener únicamente los campos 'name' y 'price', excluyendo '_id'.",
+        "Los resultados deben estar ordenados de mayor a menor precio.",
+        "Usa limit para devolver solo los 3 primeros."
+      ],
       active: true,
       orderMatters: true,
     },
@@ -250,6 +255,12 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       ],
       baselineQuery: challenge2Baseline,
       tags: ['aggregate', 'match', 'group', 'sort'],
+      notes: [
+        "La suma del campo amount debe tener el alias 'total' en la etapa $group.",
+        "Filtra primero con $match para incluir solo pedidos con status 'paid'.",
+        "El campo _id del $group debe ser '$customerId'.",
+        "Ordena de mayor a menor por 'total'."
+      ],
       active: true,
       orderMatters: true,
     },
@@ -267,6 +278,11 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       ],
       baselineQuery: challenge3Baseline,
       tags: ['aggregate', 'group', 'sort'],
+      notes: [
+        "El conteo de pedidos debe tener el alias 'count' en la etapa $group.",
+        "El campo _id del $group debe ser '$status'.",
+        "Ordena alfabéticamente por el campo _id."
+      ],
       active: true,
       orderMatters: true,
     },
@@ -284,6 +300,11 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       ],
       baselineQuery: challenge4Baseline,
       tags: ['find', 'filter', 'sort', 'projection'],
+      notes: [
+        "Proyecta únicamente los campos 'sku' y 'stock', excluyendo '_id'.",
+        "Ordena de menor a mayor stock.",
+        "Usa limit para devolver solo 3 resultados."
+      ],
       active: true,
       orderMatters: true,
     },
@@ -297,6 +318,11 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       expectedResult: [{ _id: 'tech', totalStock: 270, productCount: 7 }],
       baselineQuery: challenge5Baseline,
       tags: ['aggregate', 'group', 'sum'],
+      notes: [
+        "Usa el alias 'totalStock' para la suma de stock y 'productCount' para el número de productos en la etapa $group.",
+        "El campo _id del $group debe ser '$category'.",
+        "Ordena los resultados alfabéticamente por _id (categoría)."
+      ],
       active: true,
       orderMatters: true,
     },
@@ -313,6 +339,11 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       ],
       baselineQuery: challenge6Baseline,
       tags: ['find', 'in', 'sort', 'limit'],
+      notes: [
+        "Proyecta únicamente 'orderId', 'status' y 'amount', excluyendo '_id'.",
+        "Usa el operador $in para filtrar por los estados 'pending' y 'canceled'.",
+        "Ordena de mayor a menor por amount y limita a 2 resultados."
+      ],
       active: true,
       orderMatters: true,
     },
@@ -330,6 +361,12 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       ],
       baselineQuery: challenge7Baseline,
       tags: ['aggregate', 'match', 'group', 'sort'],
+      notes: [
+        "El monto máximo debe tener el alias 'maxAmount' y el conteo de pedidos el alias 'orders' en la etapa $group.",
+        "Filtra primero con $match para incluir solo pedidos con status 'paid'.",
+        "El campo _id del $group debe ser '$customerId'.",
+        "Ordena de mayor a menor por 'maxAmount', y en caso de empate, por '_id' ascendente."
+      ],
       active: true,
       orderMatters: true,
     },
@@ -348,6 +385,11 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       ],
       baselineQuery: challenge8Baseline,
       tags: ['find', 'filter', 'sort'],
+      notes: [
+        "El resultado debe contener únicamente 'name' y 'price', excluyendo '_id'.",
+        "Filtra productos con precio entre 100 y 500 (ambos incluidos) usando $gte y $lte.",
+        "Ordena alfabéticamente por nombre y limita a 4 resultados."
+      ],
       active: true,
       orderMatters: true,
     },
