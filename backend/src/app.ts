@@ -1,6 +1,5 @@
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
@@ -12,8 +11,6 @@ import adminRoutes from './routes/admin';
 import challengeRoutes from './routes/challenges';
 import submissionRoutes from './routes/submissions';
 import userRoutes from './routes/users';
-
-dotenv.config();
 
 const app = express();
 /*

@@ -6,6 +6,7 @@ import { ChallengeModel } from '../models/challenge.model';
 import { SubmissionModel } from '../models/submission.model';
 import { evaluateChallengeSubmission, parseMongoQuery } from '../services/query-evaluator.service';
 import { recomputeUserStats } from '../services/user-stats.service';
+import { AuthenticatedUser } from '../types/auth';
 import { QueryPayload } from '../types/query';
 
 const router = Router();
@@ -18,6 +19,14 @@ const getErrorMessage = (error: unknown): string => {
   }
 
   return 'Unknown evaluation error';
+};
+
+const getAuthenticatedUser = (req: { user?: AuthenticatedUser }): AuthenticatedUser => {
+  if (!req.user) {
+    throw new Error('Authentication required');
+  }
+
+  return req.user;
 };
 
 router.get('/:id', async (req, res) => {
@@ -42,20 +51,17 @@ router.get('/:id', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-
   const page = Math.max(parseInt((req.query.page as string) || '1', 10), 1);
   const limit = Math.min(Math.max(parseInt((req.query.limit as string) || '20', 10), 1), 100);
   const skip = (page - 1) * limit;
+  const user = getAuthenticatedUser(req);
 
   const [items, total] = await Promise.all([
-    SubmissionModel.find({ userId: new Types.ObjectId(req.user.userId) })
+    SubmissionModel.find({ userId: new Types.ObjectId(user.userId) })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
-    SubmissionModel.countDocuments({ userId: new Types.ObjectId(req.user.userId) }),
+    SubmissionModel.countDocuments({ userId: new Types.ObjectId(user.userId) }),
   ]);
 
   return res.json({
@@ -75,10 +81,6 @@ router.post('/', async (req, res) => {
     code?: string;
   };
 
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-
   if (!challengeId || !code) {
     return res.status(400).json({
       message: 'Missing required fields: challengeId, code',
@@ -91,6 +93,8 @@ router.post('/', async (req, res) => {
     return res.status(404).json({ message: 'Challenge not found or inactive' });
   }
 
+  const user = getAuthenticatedUser(req);
+
   let query: QueryPayload;
   try {
     query = parseMongoQuery(code);
@@ -101,7 +105,7 @@ router.post('/', async (req, res) => {
   }
 
   const submission = await SubmissionModel.create({
-    userId: new Types.ObjectId(req.user.userId),
+    userId: new Types.ObjectId(user.userId),
     challengeId: challenge._id,
     query,
     status: 'pending',
@@ -126,7 +130,7 @@ router.post('/', async (req, res) => {
     });
 
     await submission.save();
-    await recomputeUserStats(req.user.userId);
+    await recomputeUserStats(user.userId);
     return res.status(201).json(submission);
   } catch (error) {
     submission.set({
@@ -135,7 +139,7 @@ router.post('/', async (req, res) => {
     });
 
     await submission.save();
-    await recomputeUserStats(req.user.userId);
+    await recomputeUserStats(user.userId);
 
     return res.status(400).json({
       message: submission.errorMessage,

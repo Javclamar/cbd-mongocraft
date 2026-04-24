@@ -2,6 +2,7 @@ import { CookieOptions, Request, Response, Router } from 'express';
 import { config } from '../config/env';
 import { requireAuth } from '../middleware/auth.middleware';
 import { UserModel } from '../models/user.model';
+import { AuthenticatedUser } from '../types/auth';
 import {
   loginUser,
   refreshSession,
@@ -51,6 +52,14 @@ const getRefreshTokenFromRequest = (req: Request): string | null => {
   }
 
   return null;
+};
+
+const getAuthenticatedUser = (req: Request): AuthenticatedUser => {
+  if (!req.user) {
+    throw new Error('Authentication required');
+  }
+
+  return req.user;
 };
 
 router.post('/register', async (req, res) => {
@@ -144,30 +153,26 @@ router.post('/logout', async (req, res) => {
 });
 
 router.post('/logout-all', requireAuth, async (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
+  const user = getAuthenticatedUser(req);
 
-  await revokeAllUserSessions(req.user.userId);
+  await revokeAllUserSessions(user.userId);
   clearRefreshCookie(res);
 
   return res.json({ message: 'All sessions closed' });
 });
 
 router.get('/me', requireAuth, async (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
+  const user = getAuthenticatedUser(req);
 
-  await recomputeUserStats(req.user.userId);
+  await recomputeUserStats(user.userId);
 
-  const user = await UserModel.findById(req.user.userId);
+  const dbUser = await UserModel.findById(user.userId);
 
-  if (!user) {
+  if (!dbUser) {
     return res.status(404).json({ message: 'User not found' });
   }
 
-  return res.json({ user: toPublicUser(user) });
+  return res.json({ user: toPublicUser(dbUser) });
 });
 
 export default router;
