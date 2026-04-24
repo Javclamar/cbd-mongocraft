@@ -2,7 +2,7 @@
 import { ArrowRight, Loader2, AlertCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { authApi } from '@/lib/api';
+import { authApi } from '@/services/auth.service';
 
 const router = useRouter();
 const username = ref('');

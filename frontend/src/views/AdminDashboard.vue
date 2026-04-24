@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { apiFetch, authApi } from '@/lib/api';
+import { authApi } from '@/services/auth.service';
+import { adminService } from '@/services/admin.service';
 import { useRouter } from 'vue-router';
 import { LogOut, Plus, Trash2, Check, X, Shield, Activity, Users, FileCode2 } from 'lucide-vue-next';
 
@@ -39,13 +40,13 @@ onMounted(async () => {
 const fetchData = async () => {
   loading.value = true;
   try {
-    const summaryData = await apiFetch<any>('/admin/summary');
+    const summaryData = await adminService.getSummary();
     summary.value = summaryData;
 
-    const challengesData = await apiFetch<any>('/admin/challenges?limit=100&includeInactive=true');
+    const challengesData = await adminService.getChallenges(100, true);
     challenges.value = challengesData.items || [];
 
-    const usersData = await apiFetch<any>('/admin/users?limit=100');
+    const usersData = await adminService.getUsers(100);
     users.value = usersData.items || [];
   } catch (error) {
     console.error(error);
@@ -61,10 +62,7 @@ const handleLogout = async () => {
 
 const toggleChallengeStatus = async (id: string, currentStatus: boolean) => {
   try {
-    await apiFetch(`/admin/challenges/${id}/active`, {
-      method: 'PATCH',
-      body: JSON.stringify({ active: !currentStatus }),
-    });
+    await adminService.setChallengeActive(id, !currentStatus);
     await fetchData();
   } catch (error) {
     console.error(error);
@@ -92,15 +90,9 @@ const createChallenge = async () => {
     };
 
     if (editingId.value) {
-      await apiFetch(`/admin/challenges/${editingId.value}`, {
-        method: 'PATCH',
-        body: JSON.stringify(payload),
-      });
+      await adminService.updateChallenge(editingId.value, payload);
     } else {
-      await apiFetch('/admin/challenges', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
+      await adminService.createChallenge(payload);
     }
 
     cancelForm();

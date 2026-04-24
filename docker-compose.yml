@@ -38,20 +38,8 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3001"
-    environment:
-      NODE_ENV: production
-      PORT: 3001
-      MONGO_URI: mongodb://admin:adminpassword@mongo:27017/mongocraft?authSource=admin
-      MONGO_SANDBOX_URI: mongodb://admin:adminpassword@mongo:27017/mongocraft_sandbox?authSource=admin
-      SANDBOX_DB_NAME: mongocraft_sandbox
-      EVALUATION_MAX_RESULTS: 100
-      JWT_SECRET: change_this_in_production_please
-      JWT_ACCESS_EXPIRES_IN: 15m
-      JWT_REFRESH_SECRET: change_this_refresh_secret_in_production_please
-      JWT_REFRESH_EXPIRES_IN: 30d
-      AUTH_COOKIE_NAME: mongocraft_refresh_token
-      AUTH_COOKIE_SECURE: false
-      CORS_ORIGIN: http://localhost:80
+    env_file:
+      - ./backend/.env.docker
     depends_on:
       - mongo
     networks:
@@ -64,7 +52,9 @@ services:
     container_name: mongocraft_frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env.docker
     depends_on:
       - backend
     networks:

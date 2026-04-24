@@ -23,6 +23,12 @@ Variables esperadas en backend:
 
 Ver ejemplo en backend/.env.example.
 
+Variables esperadas en frontend:
+
+- VITE_API_BASE_URL
+
+Ver ejemplo en frontend/.env.example.
+
 ## Endpoints backend
 
 Health:
@@ -139,6 +145,6 @@ docker compose up --build
 
 Servicios:
 
-- Frontend: http://localhost
+- Frontend: http://localhost:5173
 - Backend: http://localhost:3001
 - Mongo Express: http://localhost:8081

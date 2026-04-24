@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { apiFetch, authState } from '@/lib/api';
+import { authState } from '@/services/auth.service';
+import { usersService } from '@/services/users.service';
 import { Loader2, Medal, Star, Trophy } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
@@ -9,7 +10,7 @@ const loading = ref(true);
 const fetchLeaderboard = async () => {
   loading.value = true;
   try {
-    const data = await apiFetch<any>('/users/leaderboard?limit=50');
+    const data = await usersService.getLeaderboard(50);
     leaderboard.value = data.items || [];
   } catch (error) {
     console.error('Failed to fetch leaderboard:', error);

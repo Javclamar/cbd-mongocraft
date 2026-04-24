@@ -5,7 +5,7 @@ import ChallengePlayground from '@/views/ChallengePlayground.vue'
 
 import AdminDashboard from '@/views/AdminDashboard.vue'
 import Leaderboard from '@/views/Leaderboard.vue'
-import { authState } from '@/lib/api'
+import { authState } from '@/services/auth.service'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,7 +34,7 @@ const router = createRouter({
       path: '/admin',
       name: 'admin-dashboard',
       component: AdminDashboard,
-      beforeEnter: (to, from, next) => {
+      beforeEnter: (_to, _from, next) => {
         if (!authState.isAuthenticated || authState.user?.role !== 'admin') {
           next('/');
         } else {

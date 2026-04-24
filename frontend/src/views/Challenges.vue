@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ArrowRight, BookOpen, CheckCircle2, Circle, Clock, Star, Loader2 } from 'lucide-vue-next'
 import { ref, onMounted, computed } from 'vue'
-import { apiFetch, authState } from '@/lib/api'
+import { authState } from '@/services/auth.service'
+import { challengesService } from '@/services/challenges.service'
+import { usersService } from '@/services/users.service'
 
 const activeFilter = ref('All')
 const activeDifficulty = ref('All')
@@ -55,8 +57,8 @@ async function fetchData() {
   loading.value = true
   try {
     const [challengesData, rankData] = await Promise.all([
-      apiFetch<any[]>('/challenges'),
-      authState.isAuthenticated ? apiFetch<any>('/users/leaderboard/me') : Promise.resolve(null)
+      challengesService.list(),
+      authState.isAuthenticated ? usersService.getMyLeaderboardContext() : Promise.resolve(null)
     ])
 
     challenges.value = challengesData.map(c => ({

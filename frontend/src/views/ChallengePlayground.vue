@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ApiFetchError, apiFetch } from '@/lib/api'
+import { ApiFetchError } from '@/services/error.service'
 import { parseMongoQuery, type QueryPayload } from '@/lib/interpreter'
 import { ArrowLeft, CheckCircle2, Database, Loader2, Play, Trophy, X, XCircle } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { challengesService } from '@/services/challenges.service'
+import { submissionsService } from '@/services/submissions.service'
 
 // Monaco editor
 import VueMonacoEditor from '@guolao/vue-monaco-editor'
@@ -240,7 +242,7 @@ async function fetchChallenge() {
   schemaError.value = null
   isSchemaModalOpen.value = false
   try {
-    const response = await apiFetch<Challenge>(`/challenges/${challengeId}`)
+    const response = await challengesService.getById(challengeId) as Challenge
     challenge.value = response
     code.value = `// Challenge: ${response.title}\n// Dataset: db.${response.datasetCollection}\n\ndb.${response.datasetCollection}.${response.baselineQuery.type === 'find' ? 'find({\n  \n})' : 'aggregate([\n  \n])'}`
   } catch (error) {
@@ -258,7 +260,7 @@ async function fetchChallengeSchema() {
   schemaError.value = null
 
   try {
-    const response = await apiFetch<ChallengeSchemaResponse>(`/challenges/${challenge.value._id}/schema`)
+    const response = await challengesService.getSchema(challenge.value._id) as ChallengeSchemaResponse
     challengeSchema.value = response
   } catch (error) {
     const normalized = normalizeError(error)
@@ -296,13 +298,10 @@ async function runCode() {
   try {
     const queryPayload: QueryPayload = parseMongoQuery(code.value)
 
-    const response = await apiFetch<SubmissionResponse>('/submissions', {
-      method: 'POST',
-      body: JSON.stringify({
+    const response = await submissionsService.create({
         challengeId: challenge.value._id,
         query: queryPayload
-      })
-    })
+      }) as SubmissionResponse
 
     data.value = response
     queryMetrics.value = extractQueryMetrics(response)
