@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ApiFetchError } from '@/services/error.service'
-import { parseMongoQuery, type QueryPayload } from '@/lib/interpreter'
 import { ArrowLeft, CheckCircle2, Database, Loader2, Play, Trophy, X, XCircle } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -296,11 +295,9 @@ async function runCode() {
   queryMetrics.value = null
 
   try {
-    const queryPayload: QueryPayload = parseMongoQuery(code.value)
-
     const response = await submissionsService.create({
         challengeId: challenge.value._id,
-        query: queryPayload
+        code: code.value
       }) as SubmissionResponse
 
     data.value = response

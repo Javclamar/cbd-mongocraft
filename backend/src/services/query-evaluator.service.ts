@@ -3,6 +3,63 @@ import { IChallenge } from '../models/challenge.model';
 import { QueryPayload } from '../types/query';
 import { config } from '../config/env';
 
+export function parseMongoQuery(code: string): QueryPayload {
+  let capturedPayload: QueryPayload | null = null;
+
+  const createChainMethods = (payload: QueryPayload) => ({
+    sort: (sortSpec: Record<string, unknown>) => {
+      if (payload.type === 'find') payload.sort = sortSpec as Record<string, 1 | -1>;
+      return createChainMethods(payload);
+    },
+    limit: (limitValue: number) => {
+      if (payload.type === 'find') payload.limit = limitValue;
+      return createChainMethods(payload);
+    },
+    toArray: () => []
+  });
+
+  const dbProxy = new Proxy({}, {
+    get: (_target, collectionName: string) => {
+      if (typeof collectionName !== 'string' || ['then', 'catch'].includes(collectionName)) {
+        return undefined;
+      }
+
+      return {
+        find: (filter: Record<string, unknown> = {}, projection?: Record<string, unknown>) => {
+          capturedPayload = {
+            type: 'find',
+            collection: collectionName,
+            filter,
+            ...(projection && { projection })
+          };
+          return createChainMethods(capturedPayload);
+        },
+        aggregate: (pipeline: Array<Record<string, unknown>> = []) => {
+          capturedPayload = {
+            type: 'aggregate',
+            collection: collectionName,
+            pipeline
+          };
+          return createChainMethods(capturedPayload);
+        }
+      };
+    }
+  });
+
+  try {
+    // eslint-disable-next-line no-new-func
+    new Function('db', code)(dbProxy);
+  } catch (error: any) {
+    throw new Error(`Syntax Error: ${error.message || 'Invalid JavaScript code'}`);
+  }
+
+  if (!capturedPayload) {
+    throw new Error('No valid MongoDB command detected. Use db.collection.find() or db.collection.aggregate().');
+  }
+
+  return capturedPayload;
+}
+
 interface ExecutionStatsSummary {
   executionTimeMillis: number;
   totalDocsExamined: number;

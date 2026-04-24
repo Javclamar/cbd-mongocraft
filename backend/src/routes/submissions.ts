@@ -4,7 +4,7 @@ import { requireAuth } from '../middleware/auth.middleware';
 import { getSandboxDb } from '../config/db';
 import { ChallengeModel } from '../models/challenge.model';
 import { SubmissionModel } from '../models/submission.model';
-import { evaluateChallengeSubmission } from '../services/query-evaluator.service';
+import { evaluateChallengeSubmission, parseMongoQuery } from '../services/query-evaluator.service';
 import { recomputeUserStats } from '../services/user-stats.service';
 import { QueryPayload } from '../types/query';
 
@@ -70,18 +70,18 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { challengeId, query } = req.body as {
+  const { challengeId, code } = req.body as {
     challengeId?: string;
-    query?: QueryPayload;
+    code?: string;
   };
 
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
 
-  if (!challengeId || !query) {
+  if (!challengeId || !code) {
     return res.status(400).json({
-      message: 'Missing required fields: challengeId, query',
+      message: 'Missing required fields: challengeId, code',
     });
   }
 
@@ -89,6 +89,15 @@ router.post('/', async (req, res) => {
 
   if (!challenge || !challenge.active) {
     return res.status(404).json({ message: 'Challenge not found or inactive' });
+  }
+
+  let query: QueryPayload;
+  try {
+    query = parseMongoQuery(code);
+  } catch (parseError) {
+    return res.status(400).json({
+      message: getErrorMessage(parseError),
+    });
   }
 
   const submission = await SubmissionModel.create({
