@@ -9,7 +9,6 @@ const summary = ref({
   activeChallenges: 0,
   inactiveChallenges: 0,
   submissions: 0,
-  pendingSubmissions: 0,
 });
 
 const challenges = ref<any[]>([]);
@@ -24,7 +23,6 @@ const newChallenge = ref({
   datasetCollection: '',
   difficulty: 'easy',
   points: 100,
-  expectedResult: '',
   baselineQuery: '',
   notes: '',
 });
@@ -63,20 +61,17 @@ const toggleChallengeStatus = async (id: string, currentStatus: boolean) => {
 
 const createChallenge = async () => {
   try {
-    let parsedExpectedResult;
     let parsedBaselineQuery;
     
     try {
-      parsedExpectedResult = JSON.parse(newChallenge.value.expectedResult);
       parsedBaselineQuery = JSON.parse(newChallenge.value.baselineQuery);
     } catch (e) {
-      alert('Invalid JSON in expected result or baseline query');
+      alert('Invalid JSON in baseline query');
       return;
     }
 
     const payload = {
       ...newChallenge.value,
-      expectedResult: parsedExpectedResult,
       baselineQuery: parsedBaselineQuery,
       notes: newChallenge.value.notes.split('\n').filter((n: string) => n.trim() !== '')
     };
@@ -103,7 +98,6 @@ const cancelForm = () => {
     datasetCollection: '',
     difficulty: 'easy',
     points: 100,
-    expectedResult: '',
     baselineQuery: '',
     notes: '',
   };
@@ -117,7 +111,6 @@ const editChallenge = (challenge: any) => {
     datasetCollection: challenge.datasetCollection || '',
     difficulty: challenge.difficulty || 'easy',
     points: challenge.points || 100,
-    expectedResult: JSON.stringify(challenge.expectedResult || [], null, 2),
     baselineQuery: JSON.stringify(challenge.baselineQuery || {}, null, 2),
     notes: (challenge.notes || []).join('\n'),
   };
@@ -130,7 +123,7 @@ const editChallenge = (challenge: any) => {
   <div class="min-h-screen bg-[#0f1319] text-white flex flex-col font-sans">
     <main class="flex-grow p-8 max-w-7xl mx-auto w-full flex flex-col gap-8">
       
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-[#13171e] border border-[#1e2532] rounded-md p-6 flex items-center gap-4">
           <div class="p-3 bg-blue-500/10 rounded-sm">
             <Users class="w-6 h-6 text-blue-400" />
@@ -161,15 +154,7 @@ const editChallenge = (challenge: any) => {
           </div>
         </div>
         
-        <div class="bg-[#13171e] border border-[#1e2532] rounded-md p-6 flex items-center gap-4">
-          <div class="p-3 bg-orange-500/10 rounded-sm">
-            <Activity class="w-6 h-6 text-orange-400" />
-          </div>
-          <div>
-            <p class="text-xs font-mono uppercase tracking-wider text-[#8a94a6]">Pending</p>
-            <p class="text-2xl font-bold mt-1">{{ summary.pendingSubmissions }}</p>
-          </div>
-        </div>
+
       </div>
 
       <div class="flex justify-between items-center mt-8">
@@ -224,11 +209,6 @@ const editChallenge = (challenge: any) => {
           <div class="space-y-2">
             <label class="text-xs font-mono uppercase tracking-wider text-[#8a94a6]">Baseline Query (JSON)</label>
             <textarea v-model="newChallenge.baselineQuery" required rows="6" class="w-full bg-[#0f1319] border border-[#1e2532] rounded-sm px-4 py-2 text-sm text-white focus:outline-none focus:border-[#00ed64] font-mono text-xs"></textarea>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-xs font-mono uppercase tracking-wider text-[#8a94a6]">Expected Result (JSON Array)</label>
-            <textarea v-model="newChallenge.expectedResult" required rows="6" class="w-full bg-[#0f1319] border border-[#1e2532] rounded-sm px-4 py-2 text-sm text-white focus:outline-none focus:border-[#00ed64] font-mono text-xs"></textarea>
           </div>
 
           <div class="md:col-span-2 flex justify-end mt-4">

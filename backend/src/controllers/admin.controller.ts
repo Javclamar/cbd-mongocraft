@@ -25,12 +25,11 @@ const parseIntWithBounds = (
 const isValidObjectId = (value: string): boolean => Types.ObjectId.isValid(value);
 
 export const getSummary = async (_req: Request, res: Response) => {
-  const [users, challenges, activeChallenges, submissions, pendingSubmissions] = await Promise.all([
+  const [users, challenges, activeChallenges, submissions] = await Promise.all([
     countUsers({}),
     countChallenges({}),
     countChallenges({ active: true }),
     countSubmissions({}),
-    countSubmissions({ status: 'pending' }),
   ]);
 
   return res.json({
@@ -39,7 +38,6 @@ export const getSummary = async (_req: Request, res: Response) => {
     activeChallenges,
     inactiveChallenges: challenges - activeChallenges,
     submissions,
-    pendingSubmissions,
   });
 };
 
@@ -126,7 +124,6 @@ export const patchChallenge = async (req: Request, res: Response) => {
     'difficulty',
     'points',
     'datasetCollection',
-    'expectedResult',
     'baselineQuery',
     'tags',
     'notes',

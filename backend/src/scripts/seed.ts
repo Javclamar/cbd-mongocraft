@@ -68,12 +68,12 @@ const generatedProducts = Array.from({ length: 200000 - baseProducts.length }).m
   const skuNumber = index + baseProducts.length + 1;
   const randomType = types[Math.floor(Math.random() * types.length)];
   const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  
+
   return {
     sku: `P-${skuNumber.toString().padStart(3, '0')}`,
     name: `${randomType} ${randomAdj}`,
     category: categories[Math.floor(Math.random() * categories.length)],
-    price: Math.floor(Math.random() * 500) + 5, 
+    price: Math.floor(Math.random() * 500) + 5,
     stock: Math.floor(Math.random() * 150) + 1,
   };
 });
@@ -248,14 +248,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
   }
 
   const sandboxDb = getSandboxDb();
-  const c1Result = await sandboxDb.collection('products').find({ price: { $gte: 100 } }, { projection: { _id: 0, name: 1, price: 1 }, sort: { price: -1 }, limit: 3 }).toArray();
-  const c2Result = await sandboxDb.collection('orders').aggregate([ { $match: { status: 'paid' } }, { $group: { _id: '$customerId', total: { $sum: '$amount' } } }, { $sort: { total: -1 } }, { $limit: 3 } ]).toArray();
-  const c3Result = await sandboxDb.collection('orders').aggregate([ { $group: { _id: '$status', count: { $sum: 1 } } }, { $sort: { _id: 1 } }, { $limit: 10 } ]).toArray();
-  const c4Result = await sandboxDb.collection('products').find({ stock: { $lte: 20 } }, { projection: { _id: 0, sku: 1, stock: 1 }, sort: { stock: 1 }, limit: 3 }).toArray();
-  const c5Result = await sandboxDb.collection('products').aggregate([ { $group: { _id: '$category', totalStock: { $sum: '$stock' }, productCount: { $sum: 1 } } }, { $sort: { _id: 1 } }, { $limit: 10 } ]).toArray();
-  const c6Result = await sandboxDb.collection('orders').find({ status: { $in: ['pending', 'canceled'] } }, { projection: { _id: 0, orderId: 1, status: 1, amount: 1 }, sort: { amount: -1 }, limit: 2 }).toArray();
-  const c7Result = await sandboxDb.collection('orders').aggregate([ { $match: { status: 'paid' } }, { $group: { _id: '$customerId', maxAmount: { $max: '$amount' }, orders: { $sum: 1 } } }, { $sort: { maxAmount: -1, _id: 1 } }, { $limit: 3 } ]).toArray();
-  const c8Result = await sandboxDb.collection('products').find({ price: { $gte: 100, $lte: 500 } }, { projection: { _id: 0, name: 1, price: 1 }, sort: { name: 1 }, limit: 4 }).toArray();
 
   const challenges = await ChallengeModel.insertMany([
     {
@@ -265,7 +257,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'products',
-      expectedResult: c1Result,
       baselineQuery: challenge1Baseline,
       tags: ['find', 'filter', 'sort', 'limit'],
       notes: [
@@ -283,7 +274,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'orders',
-      expectedResult: c2Result,
       baselineQuery: challenge2Baseline,
       tags: ['aggregate', 'match', 'group', 'sort'],
       notes: [
@@ -302,7 +292,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'orders',
-      expectedResult: c3Result,
       baselineQuery: challenge3Baseline,
       tags: ['aggregate', 'group', 'sort'],
       notes: [
@@ -320,7 +309,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'products',
-      expectedResult: c4Result,
       baselineQuery: challenge4Baseline,
       tags: ['find', 'filter', 'sort', 'projection'],
       notes: [
@@ -338,7 +326,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'products',
-      expectedResult: c5Result,
       baselineQuery: challenge5Baseline,
       tags: ['aggregate', 'group', 'sum'],
       notes: [
@@ -356,7 +343,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'orders',
-      expectedResult: c6Result,
       baselineQuery: challenge6Baseline,
       tags: ['find', 'in', 'sort', 'limit'],
       notes: [
@@ -374,7 +360,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'hard',
       points: 300,
       datasetCollection: 'orders',
-      expectedResult: c7Result,
       baselineQuery: challenge7Baseline,
       tags: ['aggregate', 'match', 'group', 'sort'],
       notes: [
@@ -393,7 +378,6 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'products',
-      expectedResult: c8Result,
       baselineQuery: challenge8Baseline,
       tags: ['find', 'filter', 'sort'],
       notes: [

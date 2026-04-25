@@ -312,10 +312,8 @@ const calculateEfficiencyScore = (
   baseline: ExecutionStatsSummary,
 ): number => {
   const timeRatio = scoreFromRatio(baseline.executionTimeMillis, submitted.executionTimeMillis);
-  const docsRatio = scoreFromRatio(baseline.totalDocsExamined, submitted.totalDocsExamined);
-  const keysRatio = scoreFromRatio(baseline.totalKeysExamined, submitted.totalKeysExamined);
 
-  return (timeRatio * 0.5 + docsRatio * 0.3 + keysRatio * 0.2) * 20;
+  return timeRatio * 20;
 };
 
 export const evaluateChallengeSubmission = async (

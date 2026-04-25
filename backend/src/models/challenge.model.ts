@@ -83,11 +83,6 @@ const challengeSchema = new Schema(
       trim: true,
       maxlength: 120,
     },
-    expectedResult: {
-      type: Schema.Types.Mixed,
-      required: false,
-      default: undefined,
-    },
     baselineQuery: {
       type: querySchema,
       required: true,

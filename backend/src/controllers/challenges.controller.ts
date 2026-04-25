@@ -162,8 +162,9 @@ export const getChallengeSchema = async (req: Request, res: Response) => {
 
     const sandboxDb = getSandboxDb();
     const collection = sandboxDb.collection(challenge.datasetCollection);
-    const documents = await collection.find({}).toArray();
-    const totalDocuments = documents.length;
+    
+    // Sample only up to 50 documents to prevent massive memory usage on large datasets
+    const documents = await collection.find({}).limit(50).toArray();
 
     const fieldTypes = new Map<string, Set<string>>();
     documents.forEach((document) => collectFieldTypes(document, '', fieldTypes));
@@ -177,7 +178,7 @@ export const getChallengeSchema = async (req: Request, res: Response) => {
 
     return res.json({
       collection: challenge.datasetCollection,
-      totalDocuments,
+      totalDocuments: 0, // No longer used in frontend
       sampledDocuments: documents.length,
       fields,
     });

@@ -451,22 +451,10 @@ async function runCode() {
                 </div>
               </div>
 
-              <div v-if="queryMetrics" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                <div class="p-3 bg-[#0f1319] border border-[#1e2532] rounded-sm">
+              <div v-if="queryMetrics" class="flex gap-4">
+                <div class="p-3 bg-[#0f1319] border border-[#1e2532] rounded-sm min-w-32">
                   <p class="text-[10px] uppercase text-[#8a94a6] mb-1">Execution Time</p>
                   <p class="text-white">{{ queryMetrics.executionTimeMillis ?? 'N/A' }}<span v-if="queryMetrics.executionTimeMillis !== null">ms</span></p>
-                </div>
-                <div class="p-3 bg-[#0f1319] border border-[#1e2532] rounded-sm">
-                  <p class="text-[10px] uppercase text-[#8a94a6] mb-1">Docs Examined</p>
-                  <p class="text-white">{{ queryMetrics.totalDocsExamined ?? 'N/A' }}</p>
-                </div>
-                <div class="p-3 bg-[#0f1319] border border-[#1e2532] rounded-sm">
-                  <p class="text-[10px] uppercase text-[#8a94a6] mb-1">Keys Examined</p>
-                  <p class="text-white">{{ queryMetrics.totalKeysExamined ?? 'N/A' }}</p>
-                </div>
-                <div class="p-3 bg-[#0f1319] border border-[#1e2532] rounded-sm">
-                  <p class="text-[10px] uppercase text-[#8a94a6] mb-1">Returned Docs</p>
-                  <p class="text-white">{{ queryMetrics.nReturned ?? 'N/A' }}</p>
                 </div>
               </div>
               
@@ -526,9 +514,6 @@ async function runCode() {
 
           <div v-else-if="challengeSchema" class="space-y-5">
             <div class="flex flex-wrap items-center gap-2 text-xs">
-              <span class="px-2.5 py-1 rounded-full border border-[#2c3546] bg-[#0f1319] text-[#9fb0c8]">
-                Analizados: {{ challengeSchema.sampledDocuments }} de {{ challengeSchema.totalDocuments }} docs
-              </span>
               <span class="px-2.5 py-1 rounded-full border border-[#14543a] bg-[#00ed64]/10 text-[#6effad]">
                 Showing important fields only
               </span>
