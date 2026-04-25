@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from 'mongoose';
+import { HydratedDocument, InferSchemaType, Schema, model } from 'mongoose';
 import { QueryPayload } from '../types/query';
 
 const DIFFICULTY_POINTS: Record<'easy' | 'medium' | 'hard', number> = {
@@ -118,5 +118,7 @@ export type IChallenge = InferSchemaType<typeof challengeSchema> & {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type ChallengeDocument = HydratedDocument<IChallenge>;
 
 export const ChallengeModel = model<IChallenge>('Challenge', challengeSchema);

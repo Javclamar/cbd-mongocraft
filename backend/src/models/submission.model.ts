@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from 'mongoose';
+import { HydratedDocument, InferSchemaType, Schema, model } from 'mongoose';
 import { QueryPayload } from '../types/query';
 
 const querySchema = new Schema<QueryPayload>(
@@ -119,5 +119,7 @@ export type ISubmission = InferSchemaType<typeof submissionSchema> & {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type SubmissionDocument = HydratedDocument<ISubmission>;
 
 export const SubmissionModel = model<ISubmission>('Submission', submissionSchema);
