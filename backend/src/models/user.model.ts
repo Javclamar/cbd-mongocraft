@@ -105,8 +105,6 @@ userSchema.index({
   'stats.lastSubmissionAt': -1,
 });
 
-userSchema.index({ username: 1 }, { unique: true });
-
 export type IUser = InferSchemaType<typeof userSchema> & {
   _id: Types.ObjectId;
   createdAt: Date;

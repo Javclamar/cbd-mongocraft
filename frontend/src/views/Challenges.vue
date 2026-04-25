@@ -5,11 +5,9 @@ import { authState } from '@/services/auth.service'
 import { challengesService } from '@/services/challenges.service'
 import { usersService } from '@/services/users.service'
 
-const activeFilter = ref('All')
 const activeDifficulty = ref('All')
 const loading = ref(true)
 
-const topics = ['All', 'Aggregations', 'CRUD', 'Indexing', 'Data Modeling']
 const difficulties = ['All', 'Easy', 'Medium', 'Hard']
 
 interface Challenge {
@@ -66,14 +64,14 @@ async function fetchData() {
       title: c.title,
       description: c.description,
       tags: c.tags || [],
-      difficulty: c.difficulty || 'Medium',
+      difficulty: (c.difficulty ? c.difficulty.charAt(0).toUpperCase() + c.difficulty.slice(1) : 'Medium') as 'Easy' | 'Medium' | 'Hard',
       points: c.points || 100,
       successRate: c.successRate || 0,
       status: 'locked', // TODO: sync with user submissions
     }))
 
-    if (rankData) {
-      userRankInfo.value = rankData
+    if (rankData && rankData.user) {
+      userRankInfo.value = rankData.user
     }
   } catch (err) {
     console.error('Failed to fetch data:', err)
@@ -88,15 +86,9 @@ onMounted(() => {
 
 const filteredChallenges = computed(() => {
   return challenges.value.filter((c) => {
-    const topicMatch = activeFilter.value === 'All' || c.tags.includes(activeFilter.value)
-    const diffMatch = activeDifficulty.value === 'All' || c.difficulty === activeDifficulty.value
-    return topicMatch && diffMatch
+    return activeDifficulty.value === 'All' || c.difficulty === activeDifficulty.value
   })
 })
-
-function setTopic(t: string) {
-  activeFilter.value = t
-}
 
 function setDifficulty(d: string) {
   activeDifficulty.value = d
@@ -147,23 +139,7 @@ const difficultyBar: Record<string, string> = {
       </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-      <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-[10px] font-mono uppercase tracking-wider text-[#8a94a6] mr-1">Topic:</span>
-        <button
-          v-for="t in topics"
-          :key="t"
-          @click="setTopic(t)"
-          :class="[
-            'px-3 py-1.5 text-xs font-semibold rounded-sm border transition-colors',
-            activeFilter === t
-              ? 'bg-[#00ed64] text-black border-[#00ed64]'
-              : 'bg-transparent text-[#8a94a6] border-[#1e2532] hover:border-[#00ed64]/50 hover:text-white'
-          ]"
-        >
-          {{ t }}
-        </button>
-      </div>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-start gap-4 mb-6">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="text-[10px] font-mono uppercase tracking-wider text-[#8a94a6] mr-1">Difficulty:</span>
         <button

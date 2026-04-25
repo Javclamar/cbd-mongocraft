@@ -1,6 +1,6 @@
 import { Db, Document } from 'mongodb';
 import { IChallenge } from '../models/challenge.model';
-import { QueryPayload } from '../types/query';
+import { QueryPayload, ExecutionStatsSummary, QueryExecutionResult, EvaluationResult } from '../types/query';
 import { config } from '../config/env';
 
 export function parseMongoQuery(code: string): QueryPayload {
@@ -47,7 +47,6 @@ export function parseMongoQuery(code: string): QueryPayload {
   });
 
   try {
-    // eslint-disable-next-line no-new-func
     new Function('db', code)(dbProxy);
   } catch (error: any) {
     throw new Error(`Syntax Error: ${error.message || 'Invalid JavaScript code'}`);
@@ -60,32 +59,6 @@ export function parseMongoQuery(code: string): QueryPayload {
   return capturedPayload;
 }
 
-interface ExecutionStatsSummary {
-  executionTimeMillis: number;
-  totalDocsExamined: number;
-  totalKeysExamined: number;
-  nReturned: number;
-}
-
-interface QueryExecutionResult {
-  result: unknown[];
-  stats: ExecutionStatsSummary;
-}
-
-export interface EvaluationResult {
-  isCorrect: boolean;
-  correctnessScore: number;
-  efficiencyScore: number;
-  queryQualityScore: number;
-  normalizedScore: number;
-  maxPoints: number;
-  awardedPoints: number;
-  metrics: {
-    submitted: ExecutionStatsSummary;
-    baseline?: ExecutionStatsSummary;
-  };
-  resultSample: unknown[];
-}
 
 const BLOCKED_OPERATORS = new Set([
   '$where',

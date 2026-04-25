@@ -1,4 +1,4 @@
-import { UserRole } from '../models/user.model';
+import { IUser, UserRole } from '../models/user.model';
 
 export interface AccessTokenPayload {
   sub: string;
@@ -17,4 +17,10 @@ export interface AuthenticatedUser {
   userId: string;
   username: string;
   role: UserRole;
+}
+
+export interface AuthSessionResult {
+  user: IUser;
+  accessToken: string;
+  refreshToken: string;
 }

@@ -1,0 +1,23 @@
+PORT=3001
+NODE_ENV=development
+
+# Platform DB (users, challenges, submissions)
+MONGO_URI=mongodb://localhost:27017/mongocraft
+
+# Sandbox DB (datasets for query execution)
+MONGO_SANDBOX_URI=mongodb://localhost:27017/mongocraft_sandbox
+SANDBOX_DB_NAME=mongocraft_sandbox
+
+JWT_SECRET=change_this_in_production
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=change_this_refresh_secret_in_production
+JWT_REFRESH_EXPIRES_IN=30d
+AUTH_COOKIE_NAME=mongocraft_refresh_token
+AUTH_COOKIE_SECURE=false
+CORS_ORIGIN=http://localhost:5173
+
+# Max number of rows returned per evaluated query
+EVALUATION_MAX_RESULTS=100
+
+# Seed behavior
+SEED_RESET=true

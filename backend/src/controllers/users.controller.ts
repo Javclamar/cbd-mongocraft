@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { aggregateUsers, countUsers } from '../repositories/user.repository';
+import { LeaderboardEntry } from '../types/leaderboard';
 
 const LEADERBOARD_SORT = {
   'stats.totalScore': -1,
@@ -9,13 +10,6 @@ const LEADERBOARD_SORT = {
   _id: 1,
 } as const;
 
-interface LeaderboardEntry {
-  _id: Types.ObjectId;
-  username: string;
-  role: 'user' | 'admin';
-  stats: Record<string, unknown>;
-  rank: number;
-}
 
 const toLeaderboardItem = (entry: LeaderboardEntry, currentUserId?: string) => ({
   rank: entry.rank,

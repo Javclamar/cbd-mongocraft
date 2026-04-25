@@ -60,12 +60,11 @@ const baseProducts = [
   { sku: 'P-050', name: 'Capture Card 1080p', category: 'gaming', price: 85, stock: 40 }
 ];
 
-// 2. Generador de relleno (Crea automáticamente el resto para llegar a 250)
 const categories = ['tech', 'gaming', 'audio', 'office', 'smart_home', 'wearables', 'accessories'];
 const adjectives = ['Pro', 'Lite', 'Max', 'Ultra', 'Plus', 'Basic', 'Advanced', 'V2', 'Edition', 'Mini'];
 const types = ['Cable', 'Adapter', 'Stand', 'Charger', 'Case', 'Pad', 'Hub', 'Lens', 'Mount', 'Controller'];
 
-const generatedProducts = Array.from({ length: 1050 - baseProducts.length }).map((_, index) => {
+const generatedProducts = Array.from({ length: 200000 - baseProducts.length }).map((_, index) => {
   const skuNumber = index + baseProducts.length + 1;
   const randomType = types[Math.floor(Math.random() * types.length)];
   const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -74,15 +73,14 @@ const generatedProducts = Array.from({ length: 1050 - baseProducts.length }).map
     sku: `P-${skuNumber.toString().padStart(3, '0')}`,
     name: `${randomType} ${randomAdj}`,
     category: categories[Math.floor(Math.random() * categories.length)],
-    price: Math.floor(Math.random() * 200) + 5, // Precio aleatorio entre 5 y 205
-    stock: Math.floor(Math.random() * 150) + 1, // Stock aleatorio entre 1 y 150
+    price: Math.floor(Math.random() * 500) + 5, 
+    stock: Math.floor(Math.random() * 150) + 1,
   };
 });
 
-// 3. Este es el array final que debes usar o exportar (contiene exactamente 250 objetos)
 export const productsSeed = [...baseProducts, ...generatedProducts];
 
-const ordersSeed = [
+const baseOrders = [
   { orderId: 'O-1001', customerId: 'u1', status: 'paid', amount: 1200 },
   { orderId: 'O-1002', customerId: 'u1', status: 'paid', amount: 1300 },
   { orderId: 'O-1003', customerId: 'u1', status: 'pending', amount: 900 },
@@ -93,17 +91,29 @@ const ordersSeed = [
   { orderId: 'O-1008', customerId: 'u3', status: 'canceled', amount: 500 },
 ];
 
+const statuses = ['paid', 'pending', 'canceled'];
+const generatedOrders = Array.from({ length: 200000 - baseOrders.length }).map((_, index) => {
+  return {
+    orderId: `O-${1009 + index}`,
+    customerId: `u${Math.floor(Math.random() * 100) + 1}`,
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    amount: Math.floor(Math.random() * 1000) + 10,
+  };
+});
+
+export const ordersSeed = [...baseOrders, ...generatedOrders];
+
 const usersSeed = [
   { username: 'admin', password: '123456', role: 'admin' as const },
-  { username: 'ana', password: '123456', role: 'user' as const },
-  { username: 'luis', password: '123456', role: 'user' as const },
-  { username: 'maria', password: '123456', role: 'user' as const },
-  { username: 'pedro', password: '123456', role: 'user' as const },
-  { username: 'sofia', password: '123456', role: 'user' as const },
-  { username: 'diego', password: '123456', role: 'user' as const },
-  { username: 'carla', password: '123456', role: 'user' as const },
-  { username: 'juan', password: '123456', role: 'user' as const },
-  { username: 'elena', password: '123456', role: 'user' as const },
+  { username: 'user1', password: '123456', role: 'user' as const },
+  { username: 'user2', password: '123456', role: 'user' as const },
+  { username: 'user3', password: '123456', role: 'user' as const },
+  { username: 'user4', password: '123456', role: 'user' as const },
+  { username: 'user5', password: '123456', role: 'user' as const },
+  { username: 'user6', password: '123456', role: 'user' as const },
+  { username: 'user7', password: '123456', role: 'user' as const },
+  { username: 'user8', password: '123456', role: 'user' as const },
+  { username: 'user9', password: '123456', role: 'user' as const },
 ];
 
 const challenge1Baseline: QueryPayload = {
@@ -237,6 +247,16 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
     await ChallengeModel.deleteMany({});
   }
 
+  const sandboxDb = getSandboxDb();
+  const c1Result = await sandboxDb.collection('products').find({ price: { $gte: 100 } }, { projection: { _id: 0, name: 1, price: 1 }, sort: { price: -1 }, limit: 3 }).toArray();
+  const c2Result = await sandboxDb.collection('orders').aggregate([ { $match: { status: 'paid' } }, { $group: { _id: '$customerId', total: { $sum: '$amount' } } }, { $sort: { total: -1 } }, { $limit: 3 } ]).toArray();
+  const c3Result = await sandboxDb.collection('orders').aggregate([ { $group: { _id: '$status', count: { $sum: 1 } } }, { $sort: { _id: 1 } }, { $limit: 10 } ]).toArray();
+  const c4Result = await sandboxDb.collection('products').find({ stock: { $lte: 20 } }, { projection: { _id: 0, sku: 1, stock: 1 }, sort: { stock: 1 }, limit: 3 }).toArray();
+  const c5Result = await sandboxDb.collection('products').aggregate([ { $group: { _id: '$category', totalStock: { $sum: '$stock' }, productCount: { $sum: 1 } } }, { $sort: { _id: 1 } }, { $limit: 10 } ]).toArray();
+  const c6Result = await sandboxDb.collection('orders').find({ status: { $in: ['pending', 'canceled'] } }, { projection: { _id: 0, orderId: 1, status: 1, amount: 1 }, sort: { amount: -1 }, limit: 2 }).toArray();
+  const c7Result = await sandboxDb.collection('orders').aggregate([ { $match: { status: 'paid' } }, { $group: { _id: '$customerId', maxAmount: { $max: '$amount' }, orders: { $sum: 1 } } }, { $sort: { maxAmount: -1, _id: 1 } }, { $limit: 3 } ]).toArray();
+  const c8Result = await sandboxDb.collection('products').find({ price: { $gte: 100, $lte: 500 } }, { projection: { _id: 0, name: 1, price: 1 }, sort: { name: 1 }, limit: 4 }).toArray();
+
   const challenges = await ChallengeModel.insertMany([
     {
       title: 'Top 3 productos caros (price >= 100)',
@@ -245,11 +265,7 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'products',
-      expectedResult: [
-        { name: 'Laptop Pro 14', price: 1800 },
-        { name: 'Smartphone X', price: 999 },
-        { name: 'Monitor 4K', price: 420 },
-      ],
+      expectedResult: c1Result,
       baselineQuery: challenge1Baseline,
       tags: ['find', 'filter', 'sort', 'limit'],
       notes: [
@@ -267,11 +283,7 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'orders',
-      expectedResult: [
-        { _id: 'u2', total: 3650 },
-        { _id: 'u1', total: 2500 },
-        { _id: 'u3', total: 370 },
-      ],
+      expectedResult: c2Result,
       baselineQuery: challenge2Baseline,
       tags: ['aggregate', 'match', 'group', 'sort'],
       notes: [
@@ -290,11 +302,7 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'orders',
-      expectedResult: [
-        { _id: 'canceled', count: 1 },
-        { _id: 'paid', count: 6 },
-        { _id: 'pending', count: 1 },
-      ],
+      expectedResult: c3Result,
       baselineQuery: challenge3Baseline,
       tags: ['aggregate', 'group', 'sort'],
       notes: [
@@ -312,11 +320,7 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'products',
-      expectedResult: [
-        { sku: 'P-001', stock: 4 },
-        { sku: 'P-002', stock: 8 },
-        { sku: 'P-003', stock: 12 },
-      ],
+      expectedResult: c4Result,
       baselineQuery: challenge4Baseline,
       tags: ['find', 'filter', 'sort', 'projection'],
       notes: [
@@ -334,7 +338,7 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'products',
-      expectedResult: [{ _id: 'tech', totalStock: 270, productCount: 7 }],
+      expectedResult: c5Result,
       baselineQuery: challenge5Baseline,
       tags: ['aggregate', 'group', 'sum'],
       notes: [
@@ -352,10 +356,7 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'orders',
-      expectedResult: [
-        { orderId: 'O-1003', status: 'pending', amount: 900 },
-        { orderId: 'O-1008', status: 'canceled', amount: 500 },
-      ],
+      expectedResult: c6Result,
       baselineQuery: challenge6Baseline,
       tags: ['find', 'in', 'sort', 'limit'],
       notes: [
@@ -373,11 +374,7 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'hard',
       points: 300,
       datasetCollection: 'orders',
-      expectedResult: [
-        { _id: 'u2', maxAmount: 2500, orders: 2 },
-        { _id: 'u1', maxAmount: 1300, orders: 2 },
-        { _id: 'u3', maxAmount: 200, orders: 2 },
-      ],
+      expectedResult: c7Result,
       baselineQuery: challenge7Baseline,
       tags: ['aggregate', 'match', 'group', 'sort'],
       notes: [
@@ -396,12 +393,7 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'products',
-      expectedResult: [
-        { name: 'Headphones Pro', price: 299 },
-        { name: 'Mechanical Keyboard', price: 129 },
-        { name: 'Monitor 4K', price: 420 },
-        { name: 'Tablet Lite', price: 380 },
-      ],
+      expectedResult: c8Result,
       baselineQuery: challenge8Baseline,
       tags: ['find', 'filter', 'sort'],
       notes: [
@@ -425,15 +417,15 @@ const seedSampleSubmissions = async (
     await SubmissionModel.deleteMany({});
   }
 
-  const anaId = userIdsByUsername.get('ana');
-  const luisId = userIdsByUsername.get('luis');
-  const mariaId = userIdsByUsername.get('maria');
-  const pedroId = userIdsByUsername.get('pedro');
-  const sofiaId = userIdsByUsername.get('sofia');
-  const diegoId = userIdsByUsername.get('diego');
-  const carlaId = userIdsByUsername.get('carla');
-  const juanId = userIdsByUsername.get('juan');
-  const elenaId = userIdsByUsername.get('elena');
+  const user1Id = userIdsByUsername.get('user1');
+  const user2Id = userIdsByUsername.get('user2');
+  const user3Id = userIdsByUsername.get('user3');
+  const user4Id = userIdsByUsername.get('user4');
+  const user5Id = userIdsByUsername.get('user5');
+  const user6Id = userIdsByUsername.get('user6');
+  const user7Id = userIdsByUsername.get('user7');
+  const user8Id = userIdsByUsername.get('user8');
+  const user9Id = userIdsByUsername.get('user9');
   const challenge1Id = challengeIdsByTitle.get('Top 3 productos caros (price >= 100)');
   const challenge2Id = challengeIdsByTitle.get('Total pagado por cliente');
   const challenge3Id = challengeIdsByTitle.get('Conteo de pedidos por estado');
@@ -444,15 +436,15 @@ const seedSampleSubmissions = async (
   const challenge8Id = challengeIdsByTitle.get('Productos rango medio de precio');
 
   if (
-    !anaId ||
-    !luisId ||
-    !mariaId ||
-    !pedroId ||
-    !sofiaId ||
-    !diegoId ||
-    !carlaId ||
-    !juanId ||
-    !elenaId ||
+    !user1Id ||
+    !user2Id ||
+    !user3Id ||
+    !user4Id ||
+    !user5Id ||
+    !user6Id ||
+    !user7Id ||
+    !user8Id ||
+    !user9Id ||
     !challenge1Id ||
     !challenge2Id ||
     !challenge3Id ||
@@ -463,29 +455,12 @@ const seedSampleSubmissions = async (
     !challenge8Id
   ) {
     console.log('Could not resolve user/challenge IDs for sample submissions');
-    console.log('Ana:', anaId);
-    console.log('Luis:', luisId);
-    console.log('Maria:', mariaId);
-    console.log('Pedro:', pedroId);
-    console.log('Sofia:', sofiaId);
-    console.log('Diego:', diegoId);
-    console.log('Carla:', carlaId);
-    console.log('Juan:', juanId);
-    console.log('Elena:', elenaId);
-    console.log('Challenge 1:', challenge1Id);
-    console.log('Challenge 2:', challenge2Id);
-    console.log('Challenge 3:', challenge3Id);
-    console.log('Challenge 4:', challenge4Id);
-    console.log('Challenge 5:', challenge5Id);
-    console.log('Challenge 6:', challenge6Id);
-    console.log('Challenge 7:', challenge7Id);
-    console.log('Challenge 8:', challenge8Id);
     return;
   }
 
   await SubmissionModel.insertMany([
     {
-      userId: new Types.ObjectId(anaId),
+      userId: new Types.ObjectId(user1Id),
       challengeId: new Types.ObjectId(challenge1Id),
       query: challenge1Baseline,
       status: 'evaluated',
@@ -515,7 +490,7 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(anaId),
+      userId: new Types.ObjectId(user1Id),
       challengeId: new Types.ObjectId(challenge2Id),
       query: {
         type: 'aggregate',
@@ -549,7 +524,7 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(luisId),
+      userId: new Types.ObjectId(user2Id),
       challengeId: new Types.ObjectId(challenge3Id),
       query: challenge3Baseline,
       status: 'evaluated',
@@ -579,7 +554,7 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(mariaId),
+      userId: new Types.ObjectId(user3Id),
       challengeId: new Types.ObjectId(challenge4Id),
       query: challenge4Baseline,
       status: 'evaluated',
@@ -604,7 +579,7 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(pedroId),
+      userId: new Types.ObjectId(user4Id),
       challengeId: new Types.ObjectId(challenge5Id),
       query: {
         type: 'aggregate',
@@ -630,7 +605,7 @@ const seedSampleSubmissions = async (
       resultSample: [{ _id: 'tech', totalStock: 270 }],
     },
     {
-      userId: new Types.ObjectId(sofiaId),
+      userId: new Types.ObjectId(user5Id),
       challengeId: new Types.ObjectId(challenge6Id),
       query: challenge6Baseline,
       status: 'evaluated',
@@ -654,7 +629,7 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(diegoId),
+      userId: new Types.ObjectId(user6Id),
       challengeId: new Types.ObjectId(challenge7Id),
       query: challenge7Baseline,
       status: 'evaluated',
@@ -679,7 +654,7 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(carlaId),
+      userId: new Types.ObjectId(user7Id),
       challengeId: new Types.ObjectId(challenge8Id),
       query: challenge8Baseline,
       status: 'evaluated',
@@ -705,13 +680,13 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(juanId),
+      userId: new Types.ObjectId(user8Id),
       challengeId: new Types.ObjectId(challenge2Id),
       query: challenge2Baseline,
       status: 'pending',
     },
     {
-      userId: new Types.ObjectId(elenaId),
+      userId: new Types.ObjectId(user9Id),
       challengeId: new Types.ObjectId(challenge6Id),
       query: {
         type: 'find',
@@ -723,7 +698,7 @@ const seedSampleSubmissions = async (
       errorMessage: 'Query contains blocked operators',
     },
     {
-      userId: new Types.ObjectId(luisId),
+      userId: new Types.ObjectId(user2Id),
       challengeId: new Types.ObjectId(challenge1Id),
       query: {
         type: 'find',
@@ -754,7 +729,7 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(mariaId),
+      userId: new Types.ObjectId(user3Id),
       challengeId: new Types.ObjectId(challenge2Id),
       query: challenge2Baseline,
       status: 'evaluated',
@@ -779,7 +754,7 @@ const seedSampleSubmissions = async (
       ],
     },
     {
-      userId: new Types.ObjectId(pedroId),
+      userId: new Types.ObjectId(user4Id),
       challengeId: new Types.ObjectId(challenge5Id),
       query: challenge5Baseline,
       status: 'evaluated',
@@ -800,7 +775,7 @@ const seedSampleSubmissions = async (
       resultSample: [{ _id: 'tech', totalStock: 270, productCount: 7 }],
     },
     {
-      userId: new Types.ObjectId(anaId),
+      userId: new Types.ObjectId(user1Id),
       challengeId: new Types.ObjectId(challenge8Id),
       query: challenge8Baseline,
       status: 'evaluated',
@@ -832,16 +807,10 @@ const printSeedSummary = (): void => {
   console.log('Seed completed successfully.');
   console.log('Test accounts:');
   console.log('- admin / 123456');
-  console.log('- ana / 123456');
-  console.log('- luis / 123456');
-  console.log('- maria / 123456');
-  console.log('- pedro / 123456');
-  console.log('- sofia / 123456');
-  console.log('- diego / 123456');
-  console.log('- carla / 123456');
-  console.log('- juan / 123456');
-  console.log('- elena / 123456');
-  console.log('Seed data includes 8 active challenges and mixed submissions (evaluated, pending, error).');
+  for (let i = 1; i <= 9; i++) {
+    console.log(`- user${i} / 123456`);
+  }
+  console.log('Seed data includes 8 active challenges, 1000 products, 1000 orders, and mixed sample submissions.');
 };
 
 const run = async (): Promise<void> => {

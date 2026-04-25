@@ -2,7 +2,7 @@
 import { ArrowRight, Loader2, AlertCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { authApi } from '@/services/auth.service';
+import { authApi, authState } from '@/services/auth.service';
 
 const router = useRouter();
 const username = ref('');
@@ -54,7 +54,7 @@ const handleAuth = async () => {
         Step into the MongoCraft sandbox, run your queries, test your skills, and optimize your performance.
         </p>
                 
-        <div class="flex flex-wrap items-center gap-4 mb-20">
+        <div v-if="authState.isAuthenticated" class="flex flex-wrap items-center gap-4 mb-20">
           <RouterLink 
             to="/challenges"
             class="bg-[#00ed64] hover:bg-[#00ed64]/90 text-black font-bold text-sm px-6 py-3.5 rounded-sm flex items-center transition-colors"
@@ -68,7 +68,7 @@ const handleAuth = async () => {
 
     <div class="bg-[#13171e] px-8 py-16 flex flex-col justify-center">
       <div class="max-w-md mx-auto lg:mr-auto lg:ml-16 w-full">
-        <div class="bg-[#1a202a] border border-[#1e2532] rounded-md p-8 shadow-2xl relative">
+        <div v-if="!authState.isAuthenticated" class="bg-[#1a202a] border border-[#1e2532] rounded-md p-8 shadow-2xl relative">
           <div class="flex items-start justify-between mb-8">
             <h2 class="text-2xl font-bold text-white tracking-tight">
               {{ isRegister ? 'Create Account' : 'Access Secure Shell' }}
@@ -144,6 +144,22 @@ const handleAuth = async () => {
                <span class="text-[#ff7b72]">return</span> <span class="text-[#79c0ff]">true</span>; <span class="text-[#8a94a6] opacity-50">// Connection Established</span>
              </div>
           </div>
+        </div>
+
+        <div v-else class="bg-[#1a202a] border border-[#1e2532] rounded-md p-8 shadow-2xl relative text-center">
+          <h2 class="text-2xl font-bold text-white tracking-tight mb-4">
+            Connection Active
+          </h2>
+          <p class="text-[#8a94a6] mb-8">
+            You are currently logged in as <span class="text-[#00ed64] font-mono">{{ authState.user?.username }}</span>.
+          </p>
+          <RouterLink 
+            to="/challenges"
+            class="w-full h-11 bg-[#00ed64] hover:bg-[#00ed64]/90 text-black font-bold text-sm rounded-sm flex items-center justify-center gap-2 transition-colors"
+          >
+            Return to Sandbox
+            <ArrowRight class="w-4 h-4" />
+          </RouterLink>
         </div>
       </div>
     </div>

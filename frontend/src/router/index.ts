@@ -18,12 +18,20 @@ const router = createRouter({
     {
       path: '/challenges',
       name: 'challenges',
-      component: Challenges
+      component: Challenges,
+      beforeEnter: (_to, _from, next) => {
+        if (!authState.isAuthenticated) next('/')
+        else next()
+      }
     },
     {
       path: '/challenges/:id',
       name: 'challenge-playground',
-      component: ChallengePlayground
+      component: ChallengePlayground,
+      beforeEnter: (_to, _from, next) => {
+        if (!authState.isAuthenticated) next('/')
+        else next()
+      }
     },
     {
       path: '/leaderboard',

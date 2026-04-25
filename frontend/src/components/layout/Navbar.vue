@@ -27,13 +27,15 @@ const handleLogout = async () => {
               route.path === '/' ? 'text-[#00ed64] border-[#00ed64]' : 'border-transparent hover:text-white'
             ]"
           >Home</RouterLink>
-          <RouterLink
-            to="/challenges"
-            :class="[
-              'h-16 flex items-center border-b-2 transition-colors',
-              route.path === '/challenges' ? 'text-[#00ed64] border-[#00ed64]' : 'border-transparent hover:text-white'
-            ]"
-          >Challenges</RouterLink>
+          <template v-if="authState.isAuthenticated">
+            <RouterLink
+              to="/challenges"
+              :class="[
+                'h-16 flex items-center border-b-2 transition-colors',
+                route.path === '/challenges' ? 'text-[#00ed64] border-[#00ed64]' : 'border-transparent hover:text-white'
+              ]"
+            >Challenges</RouterLink>
+          </template>
           <RouterLink
             to="/leaderboard"
             :class="[

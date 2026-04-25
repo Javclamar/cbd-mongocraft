@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { authApi } from '@/services/auth.service';
 import { adminService } from '@/services/admin.service';
-import { useRouter } from 'vue-router';
-import { LogOut, Plus, Trash2, Check, X, Shield, Activity, Users, FileCode2 } from 'lucide-vue-next';
-
-const router = useRouter();
+import { Plus, Trash2, Check, X, Shield, Activity, Users, FileCode2 } from 'lucide-vue-next';
 
 const summary = ref({
   users: 0,
@@ -55,10 +51,6 @@ const fetchData = async () => {
   }
 };
 
-const handleLogout = async () => {
-  await authApi.logout();
-  router.push('/');
-};
 
 const toggleChallengeStatus = async (id: string, currentStatus: boolean) => {
   try {
@@ -136,26 +128,6 @@ const editChallenge = (challenge: any) => {
 
 <template>
   <div class="min-h-screen bg-[#0f1319] text-white flex flex-col font-sans">
-    <header class="border-b border-[#1e2532] bg-[#13171e] py-4 px-8 flex justify-between items-center sticky top-0 z-10 shrink-0">
-      <div class="flex items-center gap-4">
-        <Shield class="w-6 h-6 text-[#00ed64]" />
-        <h1 class="text-xl font-black tracking-tight text-white">Admin Console</h1>
-      </div>
-      
-      <div class="flex items-center gap-6">
-        <button @click="router.push('/challenges')" class="text-sm text-[#8a94a6] hover:text-white transition-colors">
-          View Platform
-        </button>
-        <button 
-          @click="handleLogout"
-          class="flex items-center gap-2 text-sm text-[#8a94a6] hover:text-red-400 transition-colors"
-        >
-          <LogOut class="w-4 h-4" />
-          Logout
-        </button>
-      </div>
-    </header>
-
     <main class="flex-grow p-8 max-w-7xl mx-auto w-full flex flex-col gap-8">
       
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">

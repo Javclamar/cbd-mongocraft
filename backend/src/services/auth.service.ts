@@ -3,14 +3,9 @@ import crypto from 'crypto';
 import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken';
 import { config } from '../config/env';
 import { IUser, UserDocument, UserModel } from '../models/user.model';
-import { AccessTokenPayload, AuthenticatedUser, RefreshTokenPayload } from '../types/auth';
+import { AccessTokenPayload, AuthenticatedUser, RefreshTokenPayload, AuthSessionResult } from '../types/auth';
 import { parseDurationToMs } from '../utils/time';
 
-export interface AuthSessionResult {
-  user: IUser;
-  accessToken: string;
-  refreshToken: string;
-}
 
 const ACCESS_EXPIRES_IN = config.jwtAccessExpiresIn as SignOptions['expiresIn'];
 const REFRESH_EXPIRES_IN = config.jwtRefreshExpiresIn as SignOptions['expiresIn'];
