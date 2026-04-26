@@ -101,12 +101,6 @@ const difficultyColors: Record<string, string> = {
   Medium: 'text-[#f59e0b] bg-[#f59e0b]/10 border-[#f59e0b]/20',
   Hard: 'text-[#ef4444] bg-[#ef4444]/10 border-[#ef4444]/20',
 }
-
-const difficultyBar: Record<string, string> = {
-  Easy: 'bg-[#00ed64]',
-  Medium: 'bg-[#f59e0b]',
-  Hard: 'bg-[#ef4444]',
-}
 </script>
 
 <template>
