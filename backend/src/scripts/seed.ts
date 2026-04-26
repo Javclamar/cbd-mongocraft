@@ -247,143 +247,136 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
     await ChallengeModel.deleteMany({});
   }
 
-  const sandboxDb = getSandboxDb();
-
   const challenges = await ChallengeModel.insertMany([
     {
-      title: 'Top 3 productos caros (price >= 100)',
+      title: 'Top 3 expensive products (price >= 100)',
       description:
-        'Devuelve nombre y precio de los 3 productos con mayor precio, filtrando solo los que tienen price >= 100.',
+        'Return the name and price of the top 3 most expensive products, filtering only those with price >= 100.',
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'products',
       baselineQuery: challenge1Baseline,
       tags: ['find', 'filter', 'sort', 'limit'],
       notes: [
-        "El resultado debe contener únicamente los campos 'name' y 'price', excluyendo '_id'.",
-        "Los resultados deben estar ordenados de mayor a menor precio.",
-        "Usa limit para devolver solo los 3 primeros."
+        "Project only 'name' and 'price', excluding '_id'.",
+        "Sort descending by price, limited to 3."
       ],
       active: true,
       orderMatters: true,
     },
     {
-      title: 'Total pagado por cliente',
+      title: 'Total paid per customer',
       description:
-        'Agrupa pedidos pagados por customerId y calcula total gastado por cliente, ordenando de mayor a menor.',
+        'Group paid orders by customerId and calculate the total amount spent per customer, ordered from highest to lowest.',
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'orders',
       baselineQuery: challenge2Baseline,
       tags: ['aggregate', 'match', 'group', 'sort'],
       notes: [
-        "La suma del campo amount debe tener el alias 'total' en la etapa $group.",
-        "Filtra primero con $match para incluir solo pedidos con status 'paid'.",
-        "El campo _id del $group debe ser '$customerId'.",
-        "Ordena de mayor a menor por 'total'."
+        "Use $match for 'paid' status.",
+        "Group by '$customerId' and alias the sum of amount as 'total'.",
+        "Sort descending by 'total'."
       ],
       active: true,
       orderMatters: true,
     },
     {
-      title: 'Conteo de pedidos por estado',
+      title: 'Order count by status',
       description:
-        'Cuenta cuántos pedidos hay por status y devuelve el resultado ordenado por nombre de status.',
+        'Count how many orders exist per status and return the result ordered alphabetically by status name.',
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'orders',
       baselineQuery: challenge3Baseline,
       tags: ['aggregate', 'group', 'sort'],
       notes: [
-        "El conteo de pedidos debe tener el alias 'count' en la etapa $group.",
-        "El campo _id del $group debe ser '$status'.",
-        "Ordena alfabéticamente por el campo _id."
+        "Group by '$status' and alias the count as 'count'.",
+        "Sort alphabetically by _id."
       ],
       active: true,
       orderMatters: true,
     },
     {
-      title: 'Productos con stock bajo',
+      title: 'Low stock products',
       description:
-        'Devuelve sku y stock de productos con stock <= 20, ordenados de menor a mayor stock y limitados a 3.',
+        'Return sku and stock of products with stock <= 20, ordered ascending by stock and limited to 3.',
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'products',
       baselineQuery: challenge4Baseline,
       tags: ['find', 'filter', 'sort', 'projection'],
       notes: [
-        "Proyecta únicamente los campos 'sku' y 'stock', excluyendo '_id'.",
-        "Ordena de menor a mayor stock.",
-        "Usa limit para devolver solo 3 resultados."
+        "Project only 'sku' and 'stock' (exclude '_id').",
+        "Sort ascending by stock, limited to 3 results."
       ],
       active: true,
       orderMatters: true,
     },
     {
-      title: 'Stock total por categoria',
+      title: 'Total stock by category',
       description:
-        'Agrupa productos por categoria y calcula stock total y cantidad de productos, ordenando por categoria.',
+        'Group products by category, calculating total stock and product count, ordered alphabetically by category.',
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'products',
       baselineQuery: challenge5Baseline,
       tags: ['aggregate', 'group', 'sum'],
       notes: [
-        "Usa el alias 'totalStock' para la suma de stock y 'productCount' para el número de productos en la etapa $group.",
-        "El campo _id del $group debe ser '$category'.",
-        "Ordena los resultados alfabéticamente por _id (categoría)."
+        "Group by '$category'.",
+        "Use aliases 'totalStock' (sum of stock) and 'productCount' (sum of 1).",
+        "Sort alphabetically by _id."
       ],
       active: true,
       orderMatters: true,
     },
     {
-      title: 'Pedidos no pagados mas altos',
+      title: 'Highest unpaid orders',
       description:
-        'Obtiene los pedidos con status pending o canceled, devolviendo orderId, status y amount, ordenados por amount desc limit 2.',
+        'Get orders with pending or canceled status, returning orderId, status and amount, ordered by amount descending limit 2.',
       difficulty: 'easy',
       points: 100,
       datasetCollection: 'orders',
       baselineQuery: challenge6Baseline,
       tags: ['find', 'in', 'sort', 'limit'],
       notes: [
-        "Proyecta únicamente 'orderId', 'status' y 'amount', excluyendo '_id'.",
-        "Usa el operador $in para filtrar por los estados 'pending' y 'canceled'.",
-        "Ordena de mayor a menor por amount y limita a 2 resultados."
+        "Use $in for 'pending' and 'canceled' statuses.",
+        "Project 'orderId', 'status', 'amount' (exclude '_id').",
+        "Sort descending by amount, limited to 2."
       ],
       active: true,
       orderMatters: true,
     },
     {
-      title: 'Maximo pago por cliente',
+      title: 'Max payment per customer',
       description:
-        'Para pedidos paid, calcula el monto maximo por customerId y la cantidad de pedidos paid por cliente.',
+        'For paid orders, calculate the maximum amount per customerId and the number of paid orders per customer.',
       difficulty: 'hard',
       points: 300,
       datasetCollection: 'orders',
       baselineQuery: challenge7Baseline,
       tags: ['aggregate', 'match', 'group', 'sort'],
       notes: [
-        "El monto máximo debe tener el alias 'maxAmount' y el conteo de pedidos el alias 'orders' en la etapa $group.",
-        "Filtra primero con $match para incluir solo pedidos con status 'paid'.",
-        "El campo _id del $group debe ser '$customerId'.",
-        "Ordena de mayor a menor por 'maxAmount', y en caso de empate, por '_id' ascendente."
+        "Match 'paid' orders.",
+        "Group by '$customerId', aliasing max amount as 'maxAmount' and order count as 'orders'.",
+        "Sort descending by 'maxAmount', then ascending by '_id'."
       ],
       active: true,
       orderMatters: true,
     },
     {
-      title: 'Productos rango medio de precio',
+      title: 'Mid-range price products',
       description:
-        'Devuelve nombre y precio de productos con precio entre 100 y 500, ordenados por nombre y limitados a 4.',
+        'Return name and price of products priced between 100 and 500, ordered by name and limited to 4.',
       difficulty: 'medium',
       points: 200,
       datasetCollection: 'products',
       baselineQuery: challenge8Baseline,
       tags: ['find', 'filter', 'sort'],
       notes: [
-        "El resultado debe contener únicamente 'name' y 'price', excluyendo '_id'.",
-        "Filtra productos con precio entre 100 y 500 (ambos incluidos) usando $gte y $lte.",
-        "Ordena alfabéticamente por nombre y limita a 4 resultados."
+        "Filter price between 100 and 500 inclusive ($gte, $lte).",
+        "Project 'name', 'price' (exclude '_id').",
+        "Sort alphabetically by name, limited to 4."
       ],
       active: true,
       orderMatters: true,
@@ -410,14 +403,14 @@ const seedSampleSubmissions = async (
   const user7Id = userIdsByUsername.get('user7');
   const user8Id = userIdsByUsername.get('user8');
   const user9Id = userIdsByUsername.get('user9');
-  const challenge1Id = challengeIdsByTitle.get('Top 3 productos caros (price >= 100)');
-  const challenge2Id = challengeIdsByTitle.get('Total pagado por cliente');
-  const challenge3Id = challengeIdsByTitle.get('Conteo de pedidos por estado');
-  const challenge4Id = challengeIdsByTitle.get('Productos con stock bajo');
-  const challenge5Id = challengeIdsByTitle.get('Stock total por categoria');
-  const challenge6Id = challengeIdsByTitle.get('Pedidos no pagados mas altos');
-  const challenge7Id = challengeIdsByTitle.get('Maximo pago por cliente');
-  const challenge8Id = challengeIdsByTitle.get('Productos rango medio de precio');
+  const challenge1Id = challengeIdsByTitle.get('Top 3 expensive products (price >= 100)');
+  const challenge2Id = challengeIdsByTitle.get('Total paid per customer');
+  const challenge3Id = challengeIdsByTitle.get('Order count by status');
+  const challenge4Id = challengeIdsByTitle.get('Low stock products');
+  const challenge5Id = challengeIdsByTitle.get('Total stock by category');
+  const challenge6Id = challengeIdsByTitle.get('Highest unpaid orders');
+  const challenge7Id = challengeIdsByTitle.get('Max payment per customer');
+  const challenge8Id = challengeIdsByTitle.get('Mid-range price products');
 
   if (
     !user1Id ||
