@@ -58,7 +58,7 @@ async function fetchData() {
     const [challengesData, rankData, statusData] = await Promise.all([
       challengesService.list(),
       authState.isAuthenticated ? usersService.getMyLeaderboardContext() : Promise.resolve(null),
-      authState.isAuthenticated ? submissionsService.getMyChallengeStatuses() : Promise.resolve({}),
+      authState.isAuthenticated ? submissionsService.getMyChallengeStatuses() : Promise.resolve({} as Record<string, import('@/services/submissions.service').ChallengeStatusInfo>),
     ])
 
     challenges.value = challengesData.map(c => ({
