@@ -209,17 +209,6 @@ const difficultyBar: Record<string, string> = {
             </span>
           </div>
           <p class="text-[11px] text-[#8a94a6] font-mono truncate">{{ challenge.description }}</p>
-          <div class="flex items-center gap-2 mt-2">
-            <div class="w-24 h-1 bg-[#1e2532] rounded-full overflow-hidden">
-              <div
-                class="h-full rounded-full transition-all"
-                :class="difficultyBar[challenge.difficulty]"
-                :style="{ width: challenge.successRate + '%' }"
-              />
-            </div>
-            <span class="text-[10px] font-mono text-[#8a94a6]">{{ challenge.successRate }}%</span>
-            <span class="text-[10px] font-mono text-[#8a94a6]">Success Rate</span>
-          </div>
         </div>
 
         <div class="hidden md:flex">
