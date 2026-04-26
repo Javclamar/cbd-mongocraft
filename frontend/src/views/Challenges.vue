@@ -4,6 +4,7 @@ import { ref, onMounted, computed } from 'vue'
 import { authState } from '@/services/auth.service'
 import { challengesService } from '@/services/challenges.service'
 import { usersService } from '@/services/users.service'
+import { submissionsService } from '@/services/submissions.service'
 
 const activeDifficulty = ref('All')
 const loading = ref(true)
@@ -54,9 +55,10 @@ const player = computed(() => {
 async function fetchData() {
   loading.value = true
   try {
-    const [challengesData, rankData] = await Promise.all([
+    const [challengesData, rankData, statusData] = await Promise.all([
       challengesService.list(),
-      authState.isAuthenticated ? usersService.getMyLeaderboardContext() : Promise.resolve(null)
+      authState.isAuthenticated ? usersService.getMyLeaderboardContext() : Promise.resolve(null),
+      authState.isAuthenticated ? submissionsService.getMyChallengeStatuses() : Promise.resolve({}),
     ])
 
     challenges.value = challengesData.map(c => ({
@@ -67,7 +69,7 @@ async function fetchData() {
       difficulty: (c.difficulty ? c.difficulty.charAt(0).toUpperCase() + c.difficulty.slice(1) : 'Medium') as 'Easy' | 'Medium' | 'Hard',
       points: c.points || 100,
       successRate: c.successRate || 0,
-      status: 'locked', // TODO: sync with user submissions
+      status: statusData[c._id]?.status || 'locked',
     }))
 
     if (rankData && rankData.user) {

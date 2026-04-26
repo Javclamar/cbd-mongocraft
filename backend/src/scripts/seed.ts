@@ -64,7 +64,7 @@ const categories = ['tech', 'gaming', 'audio', 'office', 'smart_home', 'wearable
 const adjectives = ['Pro', 'Lite', 'Max', 'Ultra', 'Plus', 'Basic', 'Advanced', 'V2', 'Edition', 'Mini'];
 const types = ['Cable', 'Adapter', 'Stand', 'Charger', 'Case', 'Pad', 'Hub', 'Lens', 'Mount', 'Controller'];
 
-const generatedProducts = Array.from({ length: 200000 - baseProducts.length }).map((_, index) => {
+const generatedProducts = Array.from({ length: 5000 - baseProducts.length }).map((_, index) => {
   const skuNumber = index + baseProducts.length + 1;
   const randomType = types[Math.floor(Math.random() * types.length)];
   const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -92,7 +92,7 @@ const baseOrders = [
 ];
 
 const statuses = ['paid', 'pending', 'canceled'];
-const generatedOrders = Array.from({ length: 200000 - baseOrders.length }).map((_, index) => {
+const generatedOrders = Array.from({ length: 5000 - baseOrders.length }).map((_, index) => {
   return {
     orderId: `O-${1009 + index}`,
     customerId: `u${Math.floor(Math.random() * 100) + 1}`,
@@ -668,7 +668,7 @@ const seedSampleSubmissions = async (
       query: {
         type: 'find',
         collection: 'orders',
-        filter: { $where: 'this.amount > 0' },
+        filter: { amount: { $gt: 0 }, _blocked: '$where' },
         limit: 10,
       },
       status: 'error',
@@ -787,7 +787,6 @@ const printSeedSummary = (): void => {
   for (let i = 1; i <= 9; i++) {
     console.log(`- user${i} / 123456`);
   }
-  console.log('Seed data includes 8 active challenges, 1000 products, 1000 orders, and mixed sample submissions.');
 };
 
 const run = async (): Promise<void> => {

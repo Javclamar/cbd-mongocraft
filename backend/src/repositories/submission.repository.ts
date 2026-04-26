@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Types, PipelineStage } from 'mongoose';
 import { SubmissionModel, ISubmission, SubmissionDocument } from '../models/submission.model';
 
 export const countSubmissions = async (filter: Record<string, unknown> = {}): Promise<number> => {
@@ -19,4 +19,8 @@ export const findSubmissionById = async (id: string | Types.ObjectId): Promise<S
 
 export const createSubmission = async (data: Partial<ISubmission>): Promise<SubmissionDocument> => {
   return SubmissionModel.create(data);
+};
+
+export const aggregateSubmissions = async (pipeline: PipelineStage[]): Promise<any[]> => {
+  return SubmissionModel.aggregate(pipeline);
 };

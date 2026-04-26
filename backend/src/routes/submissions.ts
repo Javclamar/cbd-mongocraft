@@ -6,6 +6,7 @@ const router = Router();
 
 router.use(requireAuth);
 
+router.get('/challenge-statuses', SubmissionsController.getMyChallengeStatuses);
 router.get('/:id', SubmissionsController.getSubmissionById);
 router.get('/', SubmissionsController.getSubmissions);
 router.post('/', SubmissionsController.createNewSubmission);

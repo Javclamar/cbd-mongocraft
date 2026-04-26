@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { getSandboxDb } from '../config/db';
-import { findSubmissionById, findSubmissions, countSubmissions, createSubmission } from '../repositories/submission.repository';
+import { findSubmissionById, findSubmissions, countSubmissions, createSubmission, aggregateSubmissions } from '../repositories/submission.repository';
 import { findChallengeById } from '../repositories/challenge.repository';
 import { evaluateChallengeSubmission, parseMongoQuery } from '../services/query-evaluator.service';
 import { recomputeUserStats } from '../services/user-stats.service';
@@ -65,6 +65,34 @@ export const getSubmissions = async (req: Request, res: Response) => {
       totalPages: Math.ceil(total / limit),
     },
   });
+};
+
+export const getMyChallengeStatuses = async (req: Request, res: Response) => {
+  const user = getAuthenticatedUser(req as any);
+
+  const results = await aggregateSubmissions([
+    { $match: { userId: new Types.ObjectId(user.userId) } },
+    {
+      $group: {
+        _id: '$challengeId',
+        hasCorrect: { $max: { $cond: [{ $eq: ['$isCorrect', true] }, 1, 0] } },
+        bestScore: { $max: '$score' },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const statuses: Record<string, { status: 'completed' | 'in-progress'; bestScore: number }> = {};
+
+  for (const row of results) {
+    const challengeId = row._id.toString();
+    statuses[challengeId] = {
+      status: row.hasCorrect ? 'completed' : 'in-progress',
+      bestScore: row.bestScore ?? 0,
+    };
+  }
+
+  return res.json(statuses);
 };
 
 export const createNewSubmission = async (req: Request, res: Response) => {
