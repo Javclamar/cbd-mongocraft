@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { adminService } from '@/services/admin.service';
-import { Plus, Trash2, Check, X, Shield, Activity, Users, FileCode2 } from 'lucide-vue-next';
+import { Plus, Check, X, Activity, Users, FileCode2 } from 'lucide-vue-next';
 
 const summary = ref({
   users: 0,
