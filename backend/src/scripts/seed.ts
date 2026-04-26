@@ -276,7 +276,8 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       notes: [
         "Use $match for 'paid' status.",
         "Group by '$customerId' and alias the sum of amount as 'total'.",
-        "Sort descending by 'total'."
+        "Sort descending by 'total'.",
+        "Limited to 3 results."
       ],
       active: true,
       orderMatters: true,
@@ -292,7 +293,8 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       tags: ['aggregate', 'group', 'sort'],
       notes: [
         "Group by '$status' and alias the count as 'count'.",
-        "Sort alphabetically by _id."
+        "Sort alphabetically by _id.",
+        "Limited to 10 results."
       ],
       active: true,
       orderMatters: true,
@@ -325,7 +327,8 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       notes: [
         "Group by '$category'.",
         "Use aliases 'totalStock' (sum of stock) and 'productCount' (sum of 1).",
-        "Sort alphabetically by _id."
+        "Sort alphabetically by _id.",
+        "Limited to 10 results."
       ],
       active: true,
       orderMatters: true,
@@ -359,7 +362,8 @@ const seedChallenges = async (): Promise<Map<string, string>> => {
       notes: [
         "Match 'paid' orders.",
         "Group by '$customerId', aliasing max amount as 'maxAmount' and order count as 'orders'.",
-        "Sort descending by 'maxAmount', then ascending by '_id'."
+        "Sort descending by 'maxAmount', then ascending by '_id'.",
+        "Limited to 3 results."
       ],
       active: true,
       orderMatters: true,
